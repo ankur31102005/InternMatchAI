@@ -84,7 +84,7 @@ services:
     container_name: internmatch_frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
     volumes:
       - ./frontend:/app
       - /app/node_modules
