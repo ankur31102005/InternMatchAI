@@ -79,10 +79,19 @@ export default function Navbar() {
         <div className="flex items-center space-x-4">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg border border-white/10 hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
             aria-label="Toggle Theme"
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-300",
+              theme === "dark"
+                ? "bg-white/10 border-white/20 text-yellow-300 hover:bg-white/20"
+                : "bg-slate-800 border-slate-600 text-yellow-400 hover:bg-slate-700"
+            )}
           >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === "dark" ? (
+              <><Sun className="w-4 h-4" /><span className="hidden sm:inline">Light</span></>
+            ) : (
+              <><Moon className="w-4 h-4" /><span className="hidden sm:inline">Dark</span></>
+            )}
           </button>
 
           {isAuthenticated ? (
