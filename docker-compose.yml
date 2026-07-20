@@ -1,0 +1,98 @@
+version: "3.9"
+
+networks:
+  internmatch_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: internmatch_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-internmatch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-internmatch_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-internmatch}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - internmatch_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-internmatch}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (FastAPI) ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend.Dockerfile
+    container_name: internmatch_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.example
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-internmatch}:${POSTGRES_PASSWORD:-internmatch_secret}@db:5432/${POSTGRES_DB:-internmatch}
+      AI_SERVICE_URL: http://ai-service:8001
+    volumes:
+      - uploads_data:/app/uploads
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internmatch_net
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── AI Service ──────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: ../docker/ai-service.Dockerfile
+    container_name: internmatch_ai
+    restart: unless-stopped
+    env_file:
+      - ./ai-service/.env.example
+    volumes:
+      - uploads_data:/app/uploads
+      - ./ai-service:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internmatch_net
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+
+  # ── Frontend (Next.js) ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    container_name: internmatch_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - internmatch_net
+    command: npm run dev
