@@ -1,15 +1,36 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuthStore } from "@/store/authStore"
 import { cn } from "@/lib/utils"
-import { Sparkles, LayoutDashboard, FileUp, User, LogOut, Briefcase } from "lucide-react"
+import { Sparkles, LayoutDashboard, FileUp, User, LogOut, Briefcase, Sun, Moon } from "lucide-react"
 
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, clearAuth, isAuthenticated } = useAuthStore()
+  const [theme, setTheme] = useState<"light" | "dark">("dark")
+
+  useEffect(() => {
+    const currentTheme = document.documentElement.classList.contains("light") ? "light" : "dark"
+    setTheme(currentTheme)
+  }, [])
+
+  const toggleTheme = () => {
+    if (theme === "dark") {
+      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.add("light")
+      localStorage.setItem("theme", "light")
+      setTheme("light")
+    } else {
+      document.documentElement.classList.remove("light")
+      document.documentElement.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+      setTheme("dark")
+    }
+  }
 
   const handleLogout = () => {
     clearAuth()
@@ -56,6 +77,14 @@ export default function Navbar() {
         )}
 
         <div className="flex items-center space-x-4">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border border-white/10 hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+            aria-label="Toggle Theme"
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+
           {isAuthenticated ? (
             <div className="flex items-center space-x-3">
               <span className="hidden sm:inline text-sm text-muted-foreground">

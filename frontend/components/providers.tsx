@@ -22,6 +22,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const { setAuth, clearAuth, setLoading } = useAuthStore()
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "dark"
+    if (savedTheme === "light") {
+      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.add("light")
+    } else {
+      document.documentElement.classList.remove("light")
+      document.documentElement.classList.add("dark")
+    }
+  }, [])
+
+  useEffect(() => {
     async function verifyUser() {
       const token = localStorage.getItem("auth_token")
       if (!token) {
