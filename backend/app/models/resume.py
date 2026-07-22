@@ -5,8 +5,7 @@ Resume model and ResumeSkill association table.
 import uuid
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, Boolean, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -27,12 +26,11 @@ class Resume(Base, UUIDMixin, TimestampMixin):
 
     # ── FK ────────────────────────────────────────────────────
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-
     # ── File Meta ─────────────────────────────────────────────
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -67,13 +65,13 @@ class ResumeSkill(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "resume_skills"
 
     resume_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("resumes.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     skill_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("skills.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

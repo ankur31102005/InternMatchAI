@@ -1,0 +1,1389 @@
+[
+  {
+    "id": "c489eebc-f7d7-46d7-96ed-7a179bbf753a",
+    "title": "Medical Informatics Fellow #1",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 8,
+    "min_gpa": 7.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Deep Learning",
+      "Machine Learning",
+      "Financial Analysis"
+    ]
+  },
+  {
+    "id": "4183f92c-faab-40ab-94d8-470372ba78ae",
+    "title": "Project Assistant #2",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 16,
+    "min_gpa": 6.5,
+    "required_degree": "Any",
+    "required_skills": [
+      "C++",
+      "Cloud Computing",
+      "Java",
+      "Agile",
+      "Excel"
+    ]
+  },
+  {
+    "id": "98dbf2c1-6497-4e28-a987-88bdaa4b37be",
+    "title": "Governance & Analytics Associate #3",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Docker",
+      "Machine Learning",
+      "Public Policy",
+      "Financial Analysis"
+    ]
+  },
+  {
+    "id": "bd026047-c3d6-4c97-bef0-80cdb0d538a1",
+    "title": "Cybersecurity Research Intern #4",
+    "ministry": "MeitY",
+    "company": "National Cyber Security Coordinator",
+    "sector": "Cybersecurity",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 12,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "GIS",
+      "Machine Learning",
+      "Communication",
+      "Deep Learning",
+      "Docker"
+    ]
+  },
+  {
+    "id": "9ac1a085-892c-4f4a-be89-28203b163016",
+    "title": "Policy Documentation Intern #5",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Any",
+    "required_skills": [
+      "Deep Learning",
+      "Java",
+      "Cybersecurity",
+      "Public Policy"
+    ]
+  },
+  {
+    "id": "7120f44b-2c27-43eb-9cd2-0f3c843fad10",
+    "title": "Policy Documentation Intern #6",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Node.js",
+      "React",
+      "Machine Learning",
+      "Power BI",
+      "Statistics"
+    ]
+  },
+  {
+    "id": "3119432f-fe5a-4004-918a-29f9134e3e67",
+    "title": "Startup Ecosystem Fellow #7",
+    "ministry": "Ministry of Commerce & Industry",
+    "company": "Invest India & Startup India Initiative",
+    "sector": "Commerce",
+    "location": "Remote",
+    "is_remote": true,
+    "stipend_amount": 20000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Agile",
+      "Cloud Computing",
+      "React"
+    ]
+  },
+  {
+    "id": "5357ef58-835d-4f07-9c99-cf02fcfee2ac",
+    "title": "Information Security Associate #8",
+    "ministry": "MeitY",
+    "company": "National Cyber Security Coordinator",
+    "sector": "Cybersecurity",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 10,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "SQL",
+      "Java",
+      "C++",
+      "Research",
+      "Agile"
+    ]
+  },
+  {
+    "id": "5342095f-a689-4f95-a297-15cfd56fed28",
+    "title": "Full Stack Developer Intern #9",
+    "ministry": "NITI Aayog",
+    "company": "Digital Transformation & AI Cell",
+    "sector": "Technology",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 10,
+    "min_gpa": 7.5,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Cloud Computing",
+      "Statistics",
+      "SQL",
+      "C++"
+    ]
+  },
+  {
+    "id": "95539769-6330-4468-bb63-f5edcf3b9a1d",
+    "title": "Full Stack Developer Intern #10",
+    "ministry": "NITI Aayog",
+    "company": "Digital Transformation & AI Cell",
+    "sector": "Technology",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 12,
+    "min_gpa": 7.0,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Project Management",
+      "Python",
+      "Communication",
+      "C++"
+    ]
+  },
+  {
+    "id": "ea20fe5a-4849-4d06-83ed-807dc77d0c8c",
+    "title": "Machine Learning Trainee #11",
+    "ministry": "Ministry of Finance",
+    "company": "Financial Intelligence Unit",
+    "sector": "Data Science",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 10,
+    "min_gpa": 6.5,
+    "required_degree": "Any",
+    "required_skills": [
+      "Agile",
+      "UI/UX Design",
+      "Docker",
+      "Project Management",
+      "Cybersecurity"
+    ]
+  },
+  {
+    "id": "18977a88-e90b-46c2-8836-39e77b42c1d8",
+    "title": "Health Data Analyst Intern #12",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 8,
+    "min_gpa": 7.0,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Python",
+      "Excel",
+      "Deep Learning",
+      "SQL"
+    ]
+  },
+  {
+    "id": "bf04b52e-9111-441c-9ff1-10cb1c74fa72",
+    "title": "Social Impact Tech Intern #13",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Python",
+      "Docker"
+    ]
+  },
+  {
+    "id": "b423a9b6-8fde-451c-8e1a-63f71d1fc8e1",
+    "title": "Rural Innovation Fellow #14",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 10,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Public Policy",
+      "Agile",
+      "Tableau",
+      "Excel"
+    ]
+  },
+  {
+    "id": "af67130a-661b-4714-81aa-70a43585e149",
+    "title": "Rural Innovation Fellow #15",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "UI/UX Design",
+      "Excel",
+      "Java",
+      "Project Management",
+      "Power BI"
+    ]
+  },
+  {
+    "id": "1eb26566-07ba-4e4a-82ee-b56d0e24e3c4",
+    "title": "Software Engineering Intern #16",
+    "ministry": "NITI Aayog",
+    "company": "Digital Transformation & AI Cell",
+    "sector": "Technology",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 12,
+    "min_gpa": 7.5,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Deep Learning",
+      "Java",
+      "Communication",
+      "Technical Writing"
+    ]
+  },
+  {
+    "id": "29f28aea-a034-43f2-a806-995711d366ac",
+    "title": "Educational Policy Analyst #17",
+    "ministry": "Ministry of Education",
+    "company": "National Educational Technology Forum",
+    "sector": "Education",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 16,
+    "min_gpa": 7.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Docker",
+      "SQL"
+    ]
+  },
+  {
+    "id": "bd4a4088-88bc-4de0-aa2f-315339cd3d8a",
+    "title": "Carbon Footprint Analyst Intern #18",
+    "ministry": "Ministry of Environment",
+    "company": "Climate Change & Green Energy Division",
+    "sector": "Sustainability",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Any",
+    "required_skills": [
+      "Project Management",
+      "Docker",
+      "Deep Learning",
+      "Research"
+    ]
+  },
+  {
+    "id": "4d5b591e-3447-48bd-b775-33342f297783",
+    "title": "Direct Benefit Transfer Analyst #19",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 6,
+    "min_gpa": 8.0,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Java",
+      "Cybersecurity",
+      "UI/UX Design",
+      "Research",
+      "Docker"
+    ]
+  },
+  {
+    "id": "afe815f5-b2e5-4c66-9b4e-d4c388a41f24",
+    "title": "Medical Informatics Fellow #20",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 16,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Communication",
+      "Project Management",
+      "Cloud Computing",
+      "Excel"
+    ]
+  },
+  {
+    "id": "43ffdcdc-90e4-469a-87c7-a175754da45c",
+    "title": "Investment Promotion Trainee #21",
+    "ministry": "Ministry of Commerce & Industry",
+    "company": "Invest India & Startup India Initiative",
+    "sector": "Commerce",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 16,
+    "min_gpa": 6.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Node.js",
+      "Communication"
+    ]
+  },
+  {
+    "id": "bd7dae9f-783b-430e-ac7c-8ba757a2d639",
+    "title": "Project Assistant #22",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 16,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "UI/UX Design",
+      "React",
+      "Java",
+      "Research",
+      "SQL"
+    ]
+  },
+  {
+    "id": "cd6bd6ed-4fdc-43de-8f65-93b33075825f",
+    "title": "Governance & Analytics Associate #23",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 16,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Python",
+      "C++",
+      "UI/UX Design",
+      "Java",
+      "Cybersecurity"
+    ]
+  },
+  {
+    "id": "dd5bcae2-8ec9-4777-b06e-c36f1c3f0b43",
+    "title": "Data Analyst Intern #24",
+    "ministry": "Ministry of Finance",
+    "company": "Financial Intelligence Unit",
+    "sector": "Data Science",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 6,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Data Analysis",
+      "React",
+      "SQL"
+    ]
+  },
+  {
+    "id": "3c7c8fde-b50e-453f-8fd9-3c73c302ea03",
+    "title": "Project Assistant #25",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 8,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "React",
+      "Communication"
+    ]
+  },
+  {
+    "id": "a7b90221-f64a-4cc8-b7d2-6dc5e49564f7",
+    "title": "Project Assistant #26",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 16,
+    "min_gpa": 7.0,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Excel",
+      "Statistics",
+      "Agile",
+      "React"
+    ]
+  },
+  {
+    "id": "2e3f1b5e-e6a4-4f64-9f99-09082e09e111",
+    "title": "Full Stack Developer Intern #27",
+    "ministry": "MeitY",
+    "company": "Digital India Development Agency",
+    "sector": "Technology",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 8,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Public Policy",
+      "Java",
+      "Cybersecurity",
+      "Docker"
+    ]
+  },
+  {
+    "id": "117dac68-2024-429f-a21b-5092efcf23f0",
+    "title": "Economic Research Intern #28",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 16,
+    "min_gpa": 7.5,
+    "required_degree": "Any",
+    "required_skills": [
+      "Data Analysis",
+      "Deep Learning",
+      "Project Management",
+      "Research"
+    ]
+  },
+  {
+    "id": "06e48b72-5681-47b6-92ce-44ae76d81f74",
+    "title": "DevOps Assistant #29",
+    "ministry": "NITI Aayog",
+    "company": "Digital Transformation & AI Cell",
+    "sector": "Technology",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 6,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Technical Writing",
+      "Research",
+      "Java",
+      "Python"
+    ]
+  },
+  {
+    "id": "00abd059-ae3e-4ad8-94e6-71a3fdec9dd1",
+    "title": "Economic Research Intern #30",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Cybersecurity",
+      "Public Policy",
+      "Communication",
+      "Excel"
+    ]
+  },
+  {
+    "id": "a80ab75c-ef0e-44d4-844b-65f11f4a2ac1",
+    "title": "Machine Learning Trainee #31",
+    "ministry": "Ministry of Finance",
+    "company": "Financial Intelligence Unit",
+    "sector": "Data Science",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 6,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Cloud Computing",
+      "Research"
+    ]
+  },
+  {
+    "id": "59aac018-5f24-499f-a175-be90b9db7ccd",
+    "title": "Economic Research Intern #32",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 6,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Research",
+      "Data Analysis",
+      "Project Management",
+      "Machine Learning",
+      "UI/UX Design"
+    ]
+  },
+  {
+    "id": "ef1f4516-343c-43c9-bcd7-71046a394a73",
+    "title": "Public Policy Research Intern #33",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 8,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Python",
+      "Agile",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "189badd7-3d3e-4960-8fac-4e73d32c69e9",
+    "title": "Carbon Footprint Analyst Intern #34",
+    "ministry": "Ministry of Environment",
+    "company": "Climate Change & Green Energy Division",
+    "sector": "Sustainability",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Data Analysis",
+      "Docker"
+    ]
+  },
+  {
+    "id": "c882e446-c456-4e3d-8e5f-b42c3963dc05",
+    "title": "Health Data Analyst Intern #35",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 6.5,
+    "required_degree": "Any",
+    "required_skills": [
+      "Deep Learning",
+      "Communication",
+      "React"
+    ]
+  },
+  {
+    "id": "ace253a0-3279-43f1-ba4a-e979f2131a9c",
+    "title": "Public Policy Research Intern #36",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Data Analysis",
+      "Financial Analysis",
+      "Excel",
+      "Machine Learning"
+    ]
+  },
+  {
+    "id": "37b0e1a3-c1e8-4caf-9bee-71df80baef27",
+    "title": "Sustainable Tech Trainee #37",
+    "ministry": "Ministry of Environment",
+    "company": "Climate Change & Green Energy Division",
+    "sector": "Sustainability",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 6.5,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "UI/UX Design",
+      "Statistics",
+      "Communication",
+      "Java",
+      "Public Policy"
+    ]
+  },
+  {
+    "id": "c3d70760-9ba1-42fd-a714-37589bf3a57e",
+    "title": "Social Impact Tech Intern #38",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 12,
+    "min_gpa": 7.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Node.js",
+      "SQL",
+      "Technical Writing"
+    ]
+  },
+  {
+    "id": "07c33900-c2cd-4f77-b87d-35eb7ae25d01",
+    "title": "Public Policy Research Intern #39",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 8,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Cybersecurity",
+      "Docker",
+      "Data Analysis"
+    ]
+  },
+  {
+    "id": "a9c851fb-2b6d-4554-8750-86236a3d62f7",
+    "title": "Economic Research Intern #40",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 8,
+    "min_gpa": 6.5,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Power BI",
+      "Technical Writing",
+      "Research",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "46de4783-741b-4a9f-a49d-c27e35a8f015",
+    "title": "Telemedicine Solutions Associate #41",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 6,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Node.js",
+      "C++"
+    ]
+  },
+  {
+    "id": "9bb181be-97e2-496f-82a9-8aa0b67a1ba7",
+    "title": "Social Impact Tech Intern #42",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 6,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Communication",
+      "Financial Analysis",
+      "Deep Learning",
+      "Docker"
+    ]
+  },
+  {
+    "id": "dcdd893b-2576-4484-ad07-328b8863be68",
+    "title": "Financial Analyst Intern #43",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 6,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Java",
+      "Deep Learning"
+    ]
+  },
+  {
+    "id": "7b249db0-146a-4b58-8d0f-3e51a2417cae",
+    "title": "Health Data Analyst Intern #44",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Power BI",
+      "GIS"
+    ]
+  },
+  {
+    "id": "7f32ac38-a809-4728-b674-ac2a09c450b9",
+    "title": "DevOps Assistant #45",
+    "ministry": "MeitY",
+    "company": "Digital India Development Agency",
+    "sector": "Technology",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 10,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "UI/UX Design",
+      "Node.js",
+      "Data Analysis"
+    ]
+  },
+  {
+    "id": "0d49c66e-250f-4ddd-be93-64902cffef30",
+    "title": "Project Assistant #46",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 8,
+    "min_gpa": 7.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Machine Learning",
+      "Research"
+    ]
+  },
+  {
+    "id": "10bdd0fe-4a2a-496c-9ed0-c7e55cfbd004",
+    "title": "EdTech Research Intern #47",
+    "ministry": "Ministry of Education",
+    "company": "National Educational Technology Forum",
+    "sector": "Education",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Technical Writing",
+      "Financial Analysis"
+    ]
+  },
+  {
+    "id": "6ed38428-90e0-49b0-8fb3-e32634738f1e",
+    "title": "Project Assistant #48",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 16,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "SQL",
+      "Power BI"
+    ]
+  },
+  {
+    "id": "f48f78e8-18cb-4a80-a777-8a10a73070e1",
+    "title": "Social Impact Tech Intern #49",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Remote",
+    "is_remote": true,
+    "stipend_amount": 15000,
+    "duration_weeks": 16,
+    "min_gpa": 6.0,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Public Policy",
+      "Excel",
+      "UI/UX Design"
+    ]
+  },
+  {
+    "id": "288d759b-e002-4b5c-b41d-49e082db38b4",
+    "title": "Governance & Analytics Associate #50",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 8,
+    "min_gpa": 6.5,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Python",
+      "Research",
+      "Data Analysis",
+      "C++",
+      "Power BI"
+    ]
+  },
+  {
+    "id": "5fc4dbbf-6375-4264-bc6b-947cd20ecb3e",
+    "title": "Financial Analyst Intern #51",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 8,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Cloud Computing",
+      "Power BI",
+      "Agile",
+      "Cybersecurity"
+    ]
+  },
+  {
+    "id": "424a9529-70f1-484a-9d9e-69bc07b226a5",
+    "title": "Economic Research Intern #52",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Research",
+      "Python"
+    ]
+  },
+  {
+    "id": "73cb9b2a-94cc-4f61-8372-b89c34d3f767",
+    "title": "Policy Documentation Intern #53",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 12,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Public Policy",
+      "Docker",
+      "Financial Analysis"
+    ]
+  },
+  {
+    "id": "78e468a6-19a7-42e1-9b6a-fab650aca62c",
+    "title": "Rural Innovation Fellow #54",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 16,
+    "min_gpa": 7.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Tableau",
+      "UI/UX Design",
+      "Agile"
+    ]
+  },
+  {
+    "id": "033e41db-136d-48f9-b3bf-7876818e483e",
+    "title": "Information Security Associate #55",
+    "ministry": "MeitY",
+    "company": "National Cyber Security Coordinator",
+    "sector": "Cybersecurity",
+    "location": "Remote",
+    "is_remote": true,
+    "stipend_amount": 20000,
+    "duration_weeks": 8,
+    "min_gpa": 8.0,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "C++",
+      "Research"
+    ]
+  },
+  {
+    "id": "b74cf2db-2664-446f-bd22-b3d87bc63d33",
+    "title": "Governance & Analytics Associate #56",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 25000,
+    "duration_weeks": 8,
+    "min_gpa": 6.0,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Financial Analysis",
+      "Statistics"
+    ]
+  },
+  {
+    "id": "e6046309-42ec-428f-a1bb-862ea909eecf",
+    "title": "Information Security Associate #57",
+    "ministry": "MeitY",
+    "company": "National Cyber Security Coordinator",
+    "sector": "Cybersecurity",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 8,
+    "min_gpa": 7.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Machine Learning",
+      "Node.js",
+      "Cybersecurity"
+    ]
+  },
+  {
+    "id": "bee44f5c-857a-4634-8b8d-0650c9538cbd",
+    "title": "Economic Research Intern #58",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Remote",
+    "is_remote": true,
+    "stipend_amount": 30000,
+    "duration_weeks": 8,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Technology",
+    "required_skills": [
+      "Project Management",
+      "Docker",
+      "Research",
+      "Statistics",
+      "Deep Learning"
+    ]
+  },
+  {
+    "id": "e06a50a0-220a-4a9f-949a-b0dca976865c",
+    "title": "Data Visualization Intern #59",
+    "ministry": "Ministry of Finance",
+    "company": "Financial Intelligence Unit",
+    "sector": "Data Science",
+    "location": "Pune",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 8,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Data Analysis",
+      "C++",
+      "Excel",
+      "React"
+    ]
+  },
+  {
+    "id": "55ec935e-a132-4558-be98-733450ce8131",
+    "title": "Health Data Analyst Intern #60",
+    "ministry": "Ministry of Health & Family Welfare",
+    "company": "Digital Health Mission",
+    "sector": "Health Tech",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 12,
+    "min_gpa": 8.0,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Financial Analysis",
+      "Public Policy",
+      "Agile",
+      "Excel"
+    ]
+  },
+  {
+    "id": "7d1f0d41-564b-4f9f-afce-1743a17507a3",
+    "title": "Governance & Analytics Associate #61",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Remote",
+    "is_remote": true,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 7.5,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "C++",
+      "Communication"
+    ]
+  },
+  {
+    "id": "1b05e272-c1a8-492d-a7b2-2ff918adffb7",
+    "title": "Curriculum Digitization Fellow #62",
+    "ministry": "Ministry of Education",
+    "company": "National Educational Technology Forum",
+    "sector": "Education",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 6,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Technical Writing",
+      "React",
+      "Tableau",
+      "Excel",
+      "Public Policy"
+    ]
+  },
+  {
+    "id": "f6bcfed4-029f-4951-a4e4-2f082368b403",
+    "title": "Financial Analyst Intern #63",
+    "ministry": "Ministry of Finance",
+    "company": "Economic Policy & Budget Division",
+    "sector": "Finance",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 18000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Python",
+      "Excel",
+      "Power BI"
+    ]
+  },
+  {
+    "id": "e0b9a862-0cd5-4062-a2e6-8ca1be5e226f",
+    "title": "Governance & Analytics Associate #64",
+    "ministry": "NITI Aayog",
+    "company": "Policy Research & Governance",
+    "sector": "Public Policy",
+    "location": "Chennai",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 16,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Deep Learning",
+      "SQL",
+      "Excel"
+    ]
+  },
+  {
+    "id": "668a9968-ab02-414a-adf4-19b3b42a032a",
+    "title": "Data Analyst Intern #65",
+    "ministry": "Ministry of Finance",
+    "company": "Financial Intelligence Unit",
+    "sector": "Data Science",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 12,
+    "min_gpa": 6.5,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Excel",
+      "Machine Learning",
+      "Deep Learning",
+      "Public Policy"
+    ]
+  },
+  {
+    "id": "24986687-cc61-42fc-9e97-16530f783ec5",
+    "title": "DevOps Assistant #66",
+    "ministry": "NITI Aayog",
+    "company": "Digital Transformation & AI Cell",
+    "sector": "Technology",
+    "location": "Remote",
+    "is_remote": true,
+    "stipend_amount": 30000,
+    "duration_weeks": 10,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Machine Learning",
+      "Public Policy",
+      "Statistics"
+    ]
+  },
+  {
+    "id": "09a7201b-9d39-4d97-af3e-37e6948df43f",
+    "title": "Software Engineering Intern #67",
+    "ministry": "MeitY",
+    "company": "Digital India Development Agency",
+    "sector": "Technology",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 8,
+    "min_gpa": 6.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "React",
+      "Public Policy"
+    ]
+  },
+  {
+    "id": "6b221cef-addf-49f5-b6a2-4f994533005d",
+    "title": "Cybersecurity Research Intern #68",
+    "ministry": "MeitY",
+    "company": "National Cyber Security Coordinator",
+    "sector": "Cybersecurity",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 30000,
+    "duration_weeks": 16,
+    "min_gpa": 7.5,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Excel",
+      "UI/UX Design"
+    ]
+  },
+  {
+    "id": "ffd37f9c-8449-4e4a-9d67-49ec6b0cb110",
+    "title": "Green Energy Research Fellow #69",
+    "ministry": "Ministry of Environment",
+    "company": "Climate Change & Green Energy Division",
+    "sector": "Sustainability",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 20000,
+    "duration_weeks": 16,
+    "min_gpa": 6.5,
+    "required_degree": "Bachelor of Technology",
+    "required_skills": [
+      "Machine Learning",
+      "Tableau"
+    ]
+  },
+  {
+    "id": "40028916-a5a9-4e03-8696-64c6a5b30425",
+    "title": "Data Visualization Intern #70",
+    "ministry": "Ministry of Finance",
+    "company": "Financial Intelligence Unit",
+    "sector": "Data Science",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 6,
+    "min_gpa": 7.0,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "SQL",
+      "Docker",
+      "Project Management",
+      "Data Analysis",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "8365c13f-8674-43fe-9149-73161fe59d5f",
+    "title": "Cloud Infrastructure Intern #71",
+    "ministry": "MeitY",
+    "company": "Digital India Development Agency",
+    "sector": "Technology",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 16,
+    "min_gpa": 8.0,
+    "required_degree": "Master of Computer Applications",
+    "required_skills": [
+      "Power BI",
+      "Deep Learning",
+      "Machine Learning",
+      "Financial Analysis",
+      "Data Analysis"
+    ]
+  },
+  {
+    "id": "49d8bb0f-434f-4e49-b2ec-63158fef3eea",
+    "title": "Project Assistant #72",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "New Delhi",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 8,
+    "min_gpa": 8.0,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Docker",
+      "Cloud Computing",
+      "Statistics",
+      "GIS"
+    ]
+  },
+  {
+    "id": "130503bd-40ea-4bfb-8b08-570896c4ddf9",
+    "title": "Cloud Infrastructure Intern #73",
+    "ministry": "MeitY",
+    "company": "Digital India Development Agency",
+    "sector": "Technology",
+    "location": "Hyderabad",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 6,
+    "min_gpa": 6.0,
+    "required_degree": "Master of Business Administration",
+    "required_skills": [
+      "Public Policy",
+      "Docker",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "7b3b637d-cedf-458c-8f07-830c347f15ba",
+    "title": "Rural Innovation Fellow #74",
+    "ministry": "Ministry of Rural Development",
+    "company": "E-Panchayat & Rural Tech Cell",
+    "sector": "Social Development",
+    "location": "Mumbai",
+    "is_remote": false,
+    "stipend_amount": 12000,
+    "duration_weeks": 6,
+    "min_gpa": 8.0,
+    "required_degree": "Any",
+    "required_skills": [
+      "Python",
+      "C++",
+      "Node.js",
+      "GIS",
+      "Machine Learning"
+    ]
+  },
+  {
+    "id": "35ade063-c980-4239-9f00-f1d82516cedc",
+    "title": "Project Assistant #75",
+    "ministry": "Ministry of External Affairs",
+    "company": "International Trade & Policy Cell",
+    "sector": "Policy",
+    "location": "Bengaluru",
+    "is_remote": false,
+    "stipend_amount": 15000,
+    "duration_weeks": 8,
+    "min_gpa": 7.0,
+    "required_degree": "Bachelor of Science",
+    "required_skills": [
+      "Machine Learning",
+      "Python",
+      "Excel"
+    ]
+  }
+]

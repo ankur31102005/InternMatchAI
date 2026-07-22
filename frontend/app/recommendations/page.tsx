@@ -110,15 +110,22 @@ export default function RecommendationsPage() {
             Failed to load recommendations. Make sure you have uploaded a resume first!
           </div>
         ) : data?.items.length === 0 ? (
-          <div className="text-center text-muted-foreground py-20">
-            Upload your resume first to view recommendations.
+          <div className="text-center text-muted-foreground py-20 flex flex-col items-center space-y-4 glass-card rounded-3xl p-8">
+            <p className="text-base text-white">No recommendations available yet.</p>
+            <p className="text-sm text-muted-foreground max-w-md">Please upload your resume to allow our AI engine to parse your skills and match you with internships.</p>
+            <button
+              onClick={() => router.push("/upload")}
+              className="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-xl text-sm transition-all glow-primary"
+            >
+              Upload Resume Now
+            </button>
           </div>
         ) : (
           <div className="space-y-8">
             {data?.items.map((rec) => {
-              const parsedMatched = JSON.parse(rec.matched_skills || "[]") as string[]
-              const parsedMissing = JSON.parse(rec.missing_skills || "[]") as string[]
-              const percentage = Math.round(rec.match_score * 100)
+              const parsedMatched = typeof rec.matched_skills === "string" ? (JSON.parse(rec.matched_skills || "[]") as string[]) : (Array.isArray(rec.matched_skills) ? rec.matched_skills : [])
+              const parsedMissing = typeof rec.missing_skills === "string" ? (JSON.parse(rec.missing_skills || "[]") as string[]) : (Array.isArray(rec.missing_skills) ? rec.missing_skills : [])
+              const percentage = Math.round((rec.match_score || 0) * 100)
 
               return (
                 <div

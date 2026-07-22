@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # ── Database ──────────────────────────────────────────────
     DATABASE_URL: str = (
-        "postgresql+asyncpg://internmatch:internmatch_secret@localhost:5432/internmatch"
+        "sqlite+aiosqlite:///./internmatch.db"
     )
 
     # ── JWT ───────────────────────────────────────────────────

@@ -23,7 +23,7 @@ interface Internship {
 }
 
 interface InternshipListResponse {
-  total: int
+  total: number
   items: Internship[]
 }
 

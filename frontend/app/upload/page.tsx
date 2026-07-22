@@ -61,26 +61,16 @@ export default function ResumeUploadPage() {
     formData.append("file", file)
 
     try {
-      // Direct call since options contain FormData
-      const token = useAuthStore.getState().token
-      const res = await fetch("http://localhost:8000/api/v1/resumes/upload", {
+      await apiFetch("/resumes/upload", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
       })
-
-      const body = await res.json()
-      if (!res.ok) {
-        throw new Error(body.detail || body.error || "Upload failed")
-      }
 
       setSuccessMsg("Resume uploaded successfully! System processing has begun.")
       setFile(null)
       setTimeout(() => {
         router.push("/recommendations")
-      }, 2500)
+      }, 2000)
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to upload file.")
     } finally {
