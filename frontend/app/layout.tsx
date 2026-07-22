@@ -1,22 +1,25 @@
 import type { Metadata } from "next"
-import { Inter, Outfit } from "next/font/google"
+import { Inter, Poppins } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 })
 
-const outfit = Outfit({
+const poppins = Poppins({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-poppins",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: "InternMatch AI | PM Internship Scheme Recommendations",
+  title: "InternMatch AI | AI-Powered Internship Recommendations",
   description:
-    "AI-powered internship matching platform. Upload your resume, check qualifications and match with the finest PM Internship Scheme openings.",
+    "InternMatch AI matches students with government, PSU and PM Internship Scheme opportunities. Upload your resume, verify eligibility and discover roles ranked by an AI compatibility score.",
 }
 
 export default function RootLayout({
@@ -25,12 +28,18 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${outfit.variable} font-sans bg-background text-foreground antialiased min-h-screen relative overflow-x-hidden`}>
-        {/* Background Ambient Glows */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-violet-900/10 blur-[120px] pointer-events-none -z-10" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-emerald-900/10 blur-[120px] pointer-events-none -z-10" />
-        
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apply saved theme before paint to avoid a flash of the wrong theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body
+        className={`${inter.variable} ${poppins.variable} font-sans bg-background text-foreground antialiased min-h-screen`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useAuthStore } from "@/store/authStore"
 import { apiFetch } from "@/services/api"
+import { Toaster } from "@/components/ui/Toaster"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -20,17 +21,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
   )
 
   const { setAuth, clearAuth, setLoading } = useAuthStore()
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "dark"
-    if (savedTheme === "light") {
-      document.documentElement.classList.remove("dark")
-      document.documentElement.classList.add("light")
-    } else {
-      document.documentElement.classList.remove("light")
-      document.documentElement.classList.add("dark")
-    }
-  }, [])
 
   useEffect(() => {
     async function verifyUser() {
@@ -57,6 +47,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
+      <Toaster />
     </QueryClientProvider>
   )
 }

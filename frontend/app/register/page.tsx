@@ -6,18 +6,23 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { Mail, User, Phone, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react"
 import { apiFetch } from "@/services/api"
-import Navbar from "@/components/Navbar"
-import { Sparkles, Mail, Lock, User, Phone, Loader2, ArrowRight } from "lucide-react"
+import { AuthLayout } from "@/components/layout/AuthLayout"
+import { SocialButtons } from "@/components/auth/SocialButtons"
+import { PasswordInput } from "@/components/auth/PasswordInput"
+import { Input, Label, FieldError } from "@/components/ui/Input"
+import { Button } from "@/components/ui/Button"
+import { toast } from "@/store/toastStore"
 
 const registerSchema = z.object({
   full_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Invalid email address" }),
+  email: z.string().email({ message: "Enter a valid email address" }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters" })
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/[0-9]/, { message: "Password must contain at least one number" }),
+    .regex(/[A-Z]/, { message: "Include at least one uppercase letter" })
+    .regex(/[0-9]/, { message: "Include at least one number" }),
   phone: z.string().optional(),
 })
 
@@ -32,152 +37,144 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
-  } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-  })
+  } = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) })
+
+  const passwordValue = watch("password") || ""
+  const checks = [
+    { label: "8+ characters", ok: passwordValue.length >= 8 },
+    { label: "Uppercase letter", ok: /[A-Z]/.test(passwordValue) },
+    { label: "A number", ok: /[0-9]/.test(passwordValue) },
+  ]
 
   const onSubmit = async (data: RegisterFormValues) => {
     setServerError(null)
     setSuccessMsg(null)
     setIsSubmitting(true)
-
     try {
-      await apiFetch("/auth/register", {
-        method: "POST",
-        json: data,
-      })
-
-      setSuccessMsg("Registration successful! Redirecting to login page...")
-      setTimeout(() => {
-        router.push("/login")
-      }, 2000)
+      await apiFetch("/auth/register", { method: "POST", json: data })
+      setSuccessMsg("Account created! Redirecting to sign in…")
+      toast.success("Account created", "You can now sign in.")
+      setTimeout(() => router.push("/login"), 1800)
     } catch (err: any) {
-      setServerError(err.message || "Registration failed. Try using a different email.")
+      setServerError(err.message || "Registration failed. Try a different email.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-
-      <main className="flex-1 flex items-center justify-center p-4 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-emerald-600/10 blur-[80px] pointer-events-none -z-10" />
-
-        <div className="w-full max-w-md glass-card rounded-3xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="font-outfit text-3xl font-bold tracking-tight mb-2">Create Account</h1>
-            <p className="text-muted-foreground text-sm">Join the AI PM Internship Scheme matches</p>
+    <AuthLayout
+      title="Create your account"
+      subtitle="Start matching with government & PSU internships in minutes."
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {serverError && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-destructive/20 bg-destructive/10 p-3.5 text-sm text-destructive">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{serverError}</span>
           </div>
+        )}
+        {successMsg && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-success/20 bg-success/10 p-3.5 text-sm text-success">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{successMsg}</span>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {serverError && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-4 rounded-xl">
-                {serverError}
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm p-4 rounded-xl">
-                {successMsg}
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Priya Sharma"
-                  {...register("full_name")}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              {errors.full_name && (
-                <p className="text-red-400 text-xs">{errors.full_name.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="email"
-                  placeholder="name@university.edu"
-                  {...register("email")}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-red-400 text-xs">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Phone Number (Optional)
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="+91-9876543210"
-                  {...register("phone")}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  {...register("password")}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              {errors.password && (
-                <p className="text-red-400 text-xs">{errors.password.message}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center space-x-2 glow-primary disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <span>Create Account</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{" "}
-            <Link href="/login" className="text-violet-400 hover:underline font-medium">
-              Sign In
-            </Link>
-          </p>
+        <div>
+          <Label htmlFor="full_name">Full name</Label>
+          <Input
+            id="full_name"
+            icon={User}
+            placeholder="Priya Sharma"
+            error={!!errors.full_name}
+            {...register("full_name")}
+          />
+          <FieldError>{errors.full_name?.message}</FieldError>
         </div>
-      </main>
-    </div>
+
+        <div>
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            icon={Mail}
+            placeholder="name@university.edu"
+            error={!!errors.email}
+            {...register("email")}
+          />
+          <FieldError>{errors.email?.message}</FieldError>
+        </div>
+
+        <div>
+          <Label htmlFor="phone">Phone number (optional)</Label>
+          <Input
+            id="phone"
+            icon={Phone}
+            placeholder="+91 98765 43210"
+            {...register("phone")}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <PasswordInput
+            id="password"
+            placeholder="••••••••"
+            error={!!errors.password}
+            {...register("password")}
+          />
+          <div className="mt-2 flex flex-wrap gap-2">
+            {checks.map((c) => (
+              <span
+                key={c.label}
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                  c.ok
+                    ? "bg-success/10 text-success"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                {c.label}
+              </span>
+            ))}
+          </div>
+          <FieldError>{errors.password?.message}</FieldError>
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={isSubmitting}
+          className="w-full"
+        >
+          {!isSubmitting && (
+            <>
+              Create account <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </Button>
+      </form>
+
+      <div className="my-6 flex items-center gap-4">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">
+          or sign up with
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <SocialButtons />
+
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link href="/login" className="font-semibold text-primary hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </AuthLayout>
   )
 }

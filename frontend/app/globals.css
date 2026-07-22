@@ -4,67 +4,87 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    /* ── Light theme (default): clean government-portal aesthetic ── */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 16%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    --surface: 0 0% 100%;
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 213 31% 91%;
-
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
-
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-
-    --primary: 263.4 70% 50.4%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 263.4 70% 50.4%;
-
-    --radius: 0.75rem;
-  }
-
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 18% 47%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 222 47% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 222 47% 16%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214 32% 91%;
+    --input: 214 32% 88%;
 
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 40% 98%;
+    /* Blue #0F4C81 */
+    --primary: 207 79% 28%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 207 79% 28%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Saffron #FF9933 */
+    --saffron: 30 100% 60%;
+    --saffron-foreground: 25 60% 18%;
 
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
+    /* Green #138808 */
+    --success: 115 89% 28%;
+    --success-foreground: 0 0% 100%;
 
-    --ring: 262.1 83.3% 57.8%;
+    --accent: 207 70% 95%;
+    --accent-foreground: 207 79% 28%;
+
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 207 79% 28%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 96%;
+
+    --surface: 222 40% 12%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 96%;
+
+    --card: 222 44% 11%;
+    --card-foreground: 210 40% 96%;
+
+    --border: 217 33% 22%;
+    --input: 217 33% 24%;
+
+    --primary: 205 78% 55%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+
+    --saffron: 30 100% 62%;
+    --saffron-foreground: 25 60% 12%;
+
+    --success: 115 55% 48%;
+    --success-foreground: 222 47% 11%;
+
+    --accent: 217 33% 20%;
+    --accent-foreground: 210 40% 96%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 205 78% 55%;
   }
 }
 
@@ -72,44 +92,78 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+  /* Accessible focus rings */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
 }
 
-/* Glassmorphism utility classes */
-.glass {
-  background: rgba(13, 17, 30, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+@layer components {
+  /* Tricolor accent bar — subtle nod to a national portal */
+  .tricolor-bar {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--saffron)) 0%,
+      hsl(var(--saffron)) 33.33%,
+      #ffffff 33.33%,
+      #ffffff 66.66%,
+      hsl(var(--success)) 66.66%,
+      hsl(var(--success)) 100%
+    );
+  }
+
+  .container-page {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Grid backdrop used on hero sections */
+  .grid-backdrop {
+    background-image: linear-gradient(
+        to right,
+        rgba(15, 76, 129, 0.05) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(15, 76, 129, 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
 }
 
-.glass-card {
-  background: rgba(18, 24, 43, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-.glass-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card-hover:hover {
-  background: rgba(22, 30, 54, 0.8);
-  border-color: rgba(263.4, 70%, 50.4%, 0.3);
-  box-shadow: 0 12px 40px 0 rgba(263.4, 70%, 50.4%, 0.15);
-  transform: translateY(-2px);
-}
-
-/* Custom glow effect */
-.glow-primary {
-  box-shadow: 0 0 40px -5px rgba(124, 58, 237, 0.3);
-}
-
-.glow-emerald {
-  box-shadow: 0 0 40px -5px rgba(16, 185, 129, 0.25);
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Skeleton shimmer */
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+  }
+  .dark .skeleton-shimmer::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+  }
 }

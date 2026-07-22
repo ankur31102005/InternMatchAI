@@ -1,59 +1,70 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useMemo } from "react"
+import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
-import { useAuthStore } from "@/store/authStore"
+import { motion } from "framer-motion"
+import {
+  Sparkles,
+  Check,
+  TrendingUp,
+  Building2,
+  ArrowRight,
+  CheckCircle2,
+  UploadCloud,
+  Lightbulb,
+  Target,
+} from "lucide-react"
+import type { RecommendationListResponse } from "@/types"
 import { apiFetch } from "@/services/api"
-import Navbar from "@/components/Navbar"
-import { Sparkles, Check, HelpCircle, ArrowRight, BookOpen, User, Building, Landmark, Loader2 } from "lucide-react"
-
-interface Recommendation {
-  id: string
-  internship_id: string
-  match_score: number
-  skill_match_score?: number
-  semantic_score?: number
-  eligibility_score?: number
-  explanation?: string
-  matched_skills?: string
-  missing_skills?: string
-  internship?: {
-    id: string
-    title: string
-    company: string
-    description: string
-    location?: string
-    is_remote: boolean
-    stipend_amount?: number
-    sector?: string
-    ministry?: string
-  }
-}
-
-interface RecommendationListResponse {
-  total: number
-  items: Recommendation[]
-}
+import { DashboardShell } from "@/components/layout/DashboardShell"
+import { ProgressRing } from "@/components/ui/ProgressRing"
+import { Badge } from "@/components/ui/Badge"
+import { Avatar } from "@/components/ui/Avatar"
+import { Button } from "@/components/ui/Button"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { CardSkeleton } from "@/components/ui/Skeleton"
+import {
+  matchPercent,
+  parseSkillList,
+  companyAccent,
+  formatStipend,
+} from "@/lib/format"
+import { toast } from "@/store/toastStore"
 
 export default function RecommendationsPage() {
-  const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading } = useAuthStore()
   const [applyingId, setApplyingId] = useState<string | null>(null)
-  const [applySuccess, setApplySuccess] = useState<Record<string, boolean>>({})
+  const [appliedIds, setAppliedIds] = useState<Record<string, boolean>>({})
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login")
-    }
-  }, [isAuthenticated, authLoading, router])
-
-  // Fetch AI recommendations
-  const { data, isLoading, error } = useQuery<RecommendationListResponse>({
+  const { data, isLoading, isError } = useQuery<RecommendationListResponse>({
     queryKey: ["recommendations"],
     queryFn: () => apiFetch<RecommendationListResponse>("/recommendations/"),
-    enabled: isAuthenticated,
   })
+
+  const items = useMemo(() => data?.items ?? [], [data])
+
+  const summary = useMemo(() => {
+    if (items.length === 0)
+      return { avg: 0, topSkills: [] as string[], gaps: [] as string[] }
+    const avg = Math.round(
+      items.reduce((sum, r) => sum + matchPercent(r.match_score), 0) / items.length
+    )
+    const gapCounts = new Map<string, number>()
+    items.forEach((r) =>
+      parseSkillList(r.missing_skills).forEach((s) =>
+        gapCounts.set(s, (gapCounts.get(s) ?? 0) + 1)
+      )
+    )
+    const matchedSet = new Set<string>()
+    items.forEach((r) =>
+      parseSkillList(r.matched_skills).forEach((s) => matchedSet.add(s))
+    )
+    const gaps = [...gapCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([s]) => s)
+    return { avg, topSkills: [...matchedSet].slice(0, 8), gaps }
+  }, [items])
 
   const handleApply = async (internshipId: string) => {
     setApplyingId(internshipId)
@@ -65,195 +76,244 @@ export default function RecommendationsPage() {
           cover_letter: "Applying via InternMatch AI Recommendations.",
         },
       })
-      setApplySuccess((prev) => ({ ...prev, [internshipId]: true }))
+      setAppliedIds((prev) => ({ ...prev, [internshipId]: true }))
+      toast.success("Application submitted", "Track it under My Applications.")
     } catch (err: any) {
-      alert(err.message || "Failed to submit application.")
+      toast.error("Couldn't apply", err.message || "Please try again.")
     } finally {
       setApplyingId(null)
     }
   }
 
-  if (authLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    )
-  }
-
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+    <DashboardShell>
+      <div className="mb-8">
+        <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-3 py-1 text-xs font-medium text-primary">
+          <Sparkles className="h-3.5 w-3.5" /> AI recommendation engine
+        </span>
+        <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">
+          Your personalised matches
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Internships ranked by how well they fit the skills in your resume.
+        </p>
+      </div>
 
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-10 max-w-4xl">
-        {/* Header Title */}
-        <div className="mb-10 text-center animate-fade-in-up">
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI compatibility engine online</span>
-          </div>
-          <h1 className="font-outfit text-3xl sm:text-5xl font-bold tracking-tight mb-2">
-            Your Personalised Recommendations
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
-            These opportunities match the skills extracted from your resume.
-          </p>
+      {isLoading ? (
+        <div className="space-y-5">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
+      ) : isError ? (
+        <EmptyState
+          icon={UploadCloud}
+          title="No recommendations yet"
+          description="Upload your resume so our AI can analyse your skills and rank matching internships."
+          action={
+            <Button href="/upload" variant="primary">
+              <UploadCloud className="h-4 w-4" /> Upload resume
+            </Button>
+          }
+        />
+      ) : items.length === 0 ? (
+        <EmptyState
+          icon={Sparkles}
+          title="Let's find your matches"
+          description="Upload your resume to generate AI-ranked internship recommendations tailored to you."
+          action={
+            <Button href="/upload" variant="primary">
+              <UploadCloud className="h-4 w-4" /> Upload resume
+            </Button>
+          }
+        />
+      ) : (
+        <div className="space-y-8">
+          {/* Summary */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="flex items-center gap-5 rounded-2xl border border-border bg-card p-6 shadow-card">
+              <ProgressRing value={summary.avg} label="Avg fit" size={104} />
+              <div>
+                <p className="font-heading text-lg font-semibold text-foreground">
+                  {items.length} strong matches
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Based on your uploaded resume and skill profile.
+                </p>
+              </div>
+            </div>
 
-        {/* Listings */}
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Target className="h-4 w-4 text-success" /> Your strengths
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {summary.topSkills.length ? (
+                  summary.topSkills.map((s) => (
+                    <Badge key={s} variant="success">
+                      {s}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Skills will appear here after processing.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Lightbulb className="h-4 w-4 text-brand-saffron-dark" /> Skills to
+                build
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {summary.gaps.length ? (
+                  summary.gaps.map((s) => (
+                    <Badge key={s} variant="saffron">
+                      {s}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    You&apos;re a great fit across the board!
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-        ) : error ? (
-          <div className="text-center text-red-400 py-10">
-            Failed to load recommendations. Make sure you have uploaded a resume first!
-          </div>
-        ) : data?.items.length === 0 ? (
-          <div className="text-center text-muted-foreground py-20">
-            Upload your resume first to view recommendations.
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {data?.items.map((rec) => {
-              const parsedMatched = JSON.parse(rec.matched_skills || "[]") as string[]
-              const parsedMissing = JSON.parse(rec.missing_skills || "[]") as string[]
-              const percentage = Math.round(rec.match_score * 100)
+
+          {/* Recommendation list */}
+          <div className="space-y-5">
+            {items.map((rec, idx) => {
+              const matched = parseSkillList(rec.matched_skills)
+              const missing = parseSkillList(rec.missing_skills)
+              const pct = matchPercent(rec.match_score)
+              const it = rec.internship
+              const isApplied = appliedIds[rec.internship_id]
 
               return (
-                <div
+                <motion.div
                   key={rec.id}
-                  className="glass-card rounded-3xl p-6 sm:p-8 animate-fade-in-up relative overflow-hidden flex flex-col md:flex-row gap-6 justify-between items-start"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: Math.min(idx * 0.05, 0.3) }}
+                  className="flex flex-col gap-6 rounded-2xl border border-border bg-card p-6 shadow-card md:flex-row"
                 >
-                  {/* Matching Indicator Glows */}
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full" />
+                  {/* Score */}
+                  <div className="flex shrink-0 flex-row items-center gap-4 md:w-40 md:flex-col md:justify-center md:border-r md:border-border md:pr-6">
+                    <ProgressRing value={pct} size={104} />
+                    {typeof rec.rank === "number" && (
+                      <Badge variant="neutral">Rank #{rec.rank}</Badge>
+                    )}
+                  </div>
 
-                  {/* Left content block */}
-                  <div className="flex-1 space-y-6">
-                    {/* Role & Company Header */}
-                    <div>
-                      <div className="flex items-center space-x-3 mb-2">
-                        {rec.internship?.ministry && (
-                          <span className="inline-flex items-center space-x-1.5 bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs px-2.5 py-1 rounded-full font-medium">
-                            <Landmark className="w-3.5 h-3.5" />
-                            <span>{rec.internship.ministry}</span>
-                          </span>
-                        )}
-                        {rec.internship?.sector && (
-                          <span className="bg-white/5 border border-white/10 text-muted-foreground text-xs px-2.5 py-1 rounded-full font-medium">
-                            {rec.internship.sector}
-                          </span>
-                        )}
+                  {/* Content */}
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-3 flex items-start justify-between gap-4">
+                      <div className="flex min-w-0 gap-3">
+                        <Avatar
+                          name={it?.company}
+                          size={44}
+                          color={companyAccent(it?.company ?? "")}
+                        />
+                        <div className="min-w-0">
+                          <Link
+                            href={`/internships/${rec.internship_id}`}
+                            className="block truncate font-heading text-lg font-semibold text-foreground transition-colors hover:text-primary"
+                          >
+                            {it?.title ?? "Internship"}
+                          </Link>
+                          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <Building2 className="h-3.5 w-3.5" />
+                            {it?.company}
+                          </p>
+                        </div>
                       </div>
-
-                      <h2 className="font-outfit text-2xl font-bold text-white mb-2">
-                        {rec.internship?.title}
-                      </h2>
-                      <p className="text-muted-foreground text-sm">{rec.internship?.company}</p>
+                      {it?.stipend_amount != null && (
+                        <span className="hidden shrink-0 text-sm font-semibold text-success sm:block">
+                          {formatStipend(it.stipend_amount, it.stipend_currency)}
+                        </span>
+                      )}
                     </div>
 
-                    {/* Score explanations */}
                     {rec.explanation && (
-                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
-                          AI Recommendation Logic
-                        </h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{rec.explanation}</p>
+                      <div className="mb-4 rounded-xl bg-accent/60 p-3">
+                        <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                          <Sparkles className="h-3.5 w-3.5" /> Why this matches
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                          {rec.explanation}
+                        </p>
                       </div>
                     )}
 
-                    {/* Overlaps & Missing Skills */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {parsedMatched.length > 0 && (
-                        <div className="space-y-2">
-                          <span className="text-xs text-emerald-400 font-semibold flex items-center space-x-1">
-                            <Check className="w-4 h-4" />
-                            <span>Matched Skills ({parsedMatched.length})</span>
-                          </span>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {matched.length > 0 && (
+                        <div>
+                          <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-success">
+                            <Check className="h-3.5 w-3.5" /> Matched ({matched.length})
+                          </p>
                           <div className="flex flex-wrap gap-1.5">
-                            {parsedMatched.map((skill) => (
-                              <span
-                                key={skill}
-                                className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs px-2 py-0.5 rounded-full"
-                              >
-                                {skill}
-                              </span>
+                            {matched.map((s) => (
+                              <Badge key={s} variant="success">
+                                {s}
+                              </Badge>
                             ))}
                           </div>
                         </div>
                       )}
-
-                      {parsedMissing.length > 0 && (
-                        <div className="space-y-2">
-                          <span className="text-xs text-orange-400 font-semibold flex items-center space-x-1">
-                            <HelpCircle className="w-4 h-4" />
-                            <span>Missing Skills ({parsedMissing.length})</span>
-                          </span>
+                      {missing.length > 0 && (
+                        <div>
+                          <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-brand-saffron-dark">
+                            <TrendingUp className="h-3.5 w-3.5" /> To build (
+                            {missing.length})
+                          </p>
                           <div className="flex flex-wrap gap-1.5">
-                            {parsedMissing.map((skill) => (
-                              <span
-                                key={skill}
-                                className="bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs px-2 py-0.5 rounded-full"
-                              >
-                                {skill}
-                              </span>
+                            {missing.map((s) => (
+                              <Badge key={s} variant="saffron">
+                                {s}
+                              </Badge>
                             ))}
                           </div>
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Right Score & Action items */}
-                  <div className="w-full md:w-48 flex flex-col items-center justify-between gap-6 md:self-stretch border-t md:border-t-0 md:border-l border-white/5 pt-6 md:pt-0 md:pl-6">
-                    <div className="text-center">
-                      <div className="w-20 h-20 rounded-full border-4 border-violet-500/20 flex items-center justify-center mb-2 mx-auto relative">
-                        <div
-                          className="absolute inset-0 rounded-full border-4 border-violet-500 border-t-transparent animate-spin-slow"
-                          style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
-                        />
-                        <span className="font-outfit text-xl font-extrabold text-white">
-                          {percentage}%
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                        Match Score
-                      </p>
-                    </div>
-
-                    <div className="w-full space-y-2.5">
-                      {applySuccess[rec.internship_id] ? (
-                        <button
-                          disabled
-                          className="w-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 py-3 rounded-xl text-sm font-medium flex items-center justify-center space-x-2"
-                        >
-                          <Check className="w-4 h-4" />
-                          <span>Applied</span>
-                        </button>
+                    <div className="mt-5 flex gap-3">
+                      {isApplied ? (
+                        <Button variant="success" disabled className="flex-1 sm:flex-none">
+                          <CheckCircle2 className="h-4 w-4" /> Applied
+                        </Button>
                       ) : (
-                        <button
+                        <Button
                           onClick={() => handleApply(rec.internship_id)}
+                          loading={applyingId === rec.internship_id}
                           disabled={applyingId !== null}
-                          className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 glow-primary"
+                          className="flex-1 sm:flex-none"
                         >
-                          {applyingId === rec.internship_id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
+                          {applyingId !== rec.internship_id && (
                             <>
-                              <span>Apply Now</span>
-                              <ArrowRight className="w-4 h-4" />
+                              Apply now <ArrowRight className="h-4 w-4" />
                             </>
                           )}
-                        </button>
+                        </Button>
                       )}
+                      <Button
+                        href={`/internships/${rec.internship_id}`}
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                      >
+                        View details
+                      </Button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )
             })}
           </div>
-        )}
-      </main>
-    </div>
+        </div>
+      )}
+    </DashboardShell>
   )
 }

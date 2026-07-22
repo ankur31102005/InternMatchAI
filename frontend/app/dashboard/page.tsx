@@ -1,200 +1,380 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
-import { useAuthStore } from "@/store/authStore"
+import {
+  Briefcase,
+  FileText,
+  Sparkles,
+  TrendingUp,
+  UploadCloud,
+  CheckCircle2,
+  Clock,
+  Bell,
+  ArrowRight,
+  Building2,
+  User,
+} from "lucide-react"
+import type {
+  ApplicationListResponse,
+  RecommendationListResponse,
+  Resume,
+} from "@/types"
 import { apiFetch } from "@/services/api"
-import Navbar from "@/components/Navbar"
-import { Search, MapPin, Building2, Calendar, Award, ExternalLink, Loader2 } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
+import { DashboardShell } from "@/components/layout/DashboardShell"
+import { Badge } from "@/components/ui/Badge"
+import { Avatar } from "@/components/ui/Avatar"
+import { Button } from "@/components/ui/Button"
+import { StatusBadge } from "@/components/internships/StatusBadge"
+import { Skeleton } from "@/components/ui/Skeleton"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { matchPercent, companyAccent, timeAgo, formatDate } from "@/lib/format"
 
-interface Internship {
-  id: string
-  title: string
-  company: string
-  description: string
-  location?: string
-  is_remote: boolean
-  duration_weeks?: number
-  stipend_amount?: number
-  is_pm_scheme: boolean
-  sector?: string
-  ministry?: string
-}
-
-interface InternshipListResponse {
-  total: int
-  items: Internship[]
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: typeof Briefcase
+  label: string
+  value: string | number
+  accent: string
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="flex items-center justify-between">
+        <span
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-white"
+          style={{ background: accent }}
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+      </div>
+      <p className="mt-4 font-heading text-2xl font-bold text-foreground">{value}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
+    </div>
+  )
 }
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading } = useAuthStore()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [sectorFilter, setSectorFilter] = useState("")
-  const [remoteFilter, setRemoteFilter] = useState("all")
+  const { user } = useAuthStore()
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login")
-    }
-  }, [isAuthenticated, authLoading, router])
-
-  // Fetch Internships
-  const { data, isLoading, error } = useQuery<InternshipListResponse>({
-    queryKey: ["internships", searchTerm, sectorFilter, remoteFilter],
-    queryFn: () => {
-      let url = `/internships/?page=1&per_page=20`
-      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`
-      if (sectorFilter) url += `&sector=${encodeURIComponent(sectorFilter)}`
-      if (remoteFilter !== "all") {
-        url += `&is_remote=${remoteFilter === "remote"}`
-      }
-      return apiFetch<InternshipListResponse>(url)
-    },
-    enabled: isAuthenticated,
+  const { data: apps } = useQuery<ApplicationListResponse>({
+    queryKey: ["applications"],
+    queryFn: () => apiFetch<ApplicationListResponse>("/applications/"),
+  })
+  const { data: recs } = useQuery<RecommendationListResponse>({
+    queryKey: ["recommendations"],
+    queryFn: () => apiFetch<RecommendationListResponse>("/recommendations/"),
+    retry: false,
+  })
+  const { data: resumes } = useQuery<Resume[]>({
+    queryKey: ["resumes"],
+    queryFn: () => apiFetch<Resume[]>("/resumes/"),
+    retry: false,
   })
 
-  if (authLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    )
-  }
+  const applications = apps?.items ?? []
+  const recommendations = recs?.items ?? []
+  const activeResume = resumes?.find((r) => r.is_active) ?? resumes?.[0]
+  const bestMatch = recommendations.length
+    ? Math.max(...recommendations.map((r) => matchPercent(r.match_score)))
+    : 0
+
+  // Profile completion heuristic
+  const completion = (() => {
+    let done = 1 // account exists
+    const total = 4
+    if (user?.phone) done++
+    if (activeResume) done++
+    if (recommendations.length > 0) done++
+    return Math.round((done / total) * 100)
+  })()
+
+  // Derived notifications from real activity
+  const notifications = [
+    activeResume?.is_processed && {
+      icon: CheckCircle2,
+      color: "text-success",
+      text: "Your resume has been processed and skills extracted.",
+      time: timeAgo(activeResume.created_at),
+    },
+    recommendations.length > 0 && {
+      icon: Sparkles,
+      color: "text-primary",
+      text: `${recommendations.length} new AI matches are ready for you.`,
+      time: timeAgo(recommendations[0]?.created_at),
+    },
+    applications.length > 0 && {
+      icon: FileText,
+      color: "text-brand-saffron-dark",
+      text: `You have ${applications.length} active application${
+        applications.length === 1 ? "" : "s"
+      }.`,
+      time: timeAgo(applications[0]?.created_at),
+    },
+  ].filter(Boolean) as {
+    icon: typeof Bell
+    color: string
+    text: string
+    time: string
+  }[]
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-8">
-        {/* Welcome Banner */}
-        <div className="mb-10 animate-fade-in-up">
-          <h1 className="font-outfit text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-            Available Internships
+    <DashboardShell>
+      {/* Greeting */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Welcome back, {user?.full_name?.split(" ")[0] || "there"} 👋
           </h1>
-          <p className="text-muted-foreground">
-            Explore listings under the PM Internship Scheme, filter sectors, or find remote configurations.
+          <p className="mt-1 text-muted-foreground">
+            Here&apos;s an overview of your internship journey.
           </p>
         </div>
+        <Button href="/upload" variant="primary">
+          <UploadCloud className="h-4 w-4" /> Update resume
+        </Button>
+      </div>
 
-        {/* Filter Section */}
-        <div className="glass-card rounded-2xl p-6 mb-8 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative w-full md:flex-1">
-            <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search by role, company or keywords..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
-            />
-          </div>
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          icon={Sparkles}
+          label="AI matches"
+          value={recommendations.length}
+          accent="#0F4C81"
+        />
+        <StatCard
+          icon={FileText}
+          label="Applications"
+          value={applications.length}
+          accent="#138808"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Best match"
+          value={`${bestMatch}%`}
+          accent="#E67E00"
+        />
+        <StatCard
+          icon={Briefcase}
+          label="Resume"
+          value={activeResume ? "Active" : "None"}
+          accent="#1B6CB3"
+        />
+      </div>
 
-          <div className="flex gap-4 w-full md:w-auto">
-            <select
-              value={sectorFilter}
-              onChange={(e) => setSectorFilter(e.target.value)}
-              className="bg-black/40 border border-white/10 text-sm text-muted-foreground rounded-xl py-3 px-4 focus:outline-none focus:border-primary transition-colors w-full md:w-44"
-            >
-              <option value="">All Sectors</option>
-              <option value="Finance">Finance</option>
-              <option value="Technology">Technology</option>
-              <option value="Policy">Policy</option>
-            </select>
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Left column */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Recommended */}
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Recommended for you
+              </h2>
+              <Link
+                href="/recommendations"
+                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                View all <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            {recommendations.length === 0 ? (
+              <EmptyState
+                icon={Sparkles}
+                title="No matches yet"
+                description="Upload your resume to get AI-ranked recommendations."
+                action={
+                  <Button href="/upload" variant="primary">
+                    Upload resume
+                  </Button>
+                }
+                className="py-10"
+              />
+            ) : (
+              <div className="space-y-3">
+                {recommendations.slice(0, 4).map((rec) => (
+                  <Link
+                    key={rec.id}
+                    href={`/internships/${rec.internship_id}`}
+                    className="flex items-center gap-4 rounded-xl border border-border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
+                  >
+                    <Avatar
+                      name={rec.internship?.company}
+                      size={40}
+                      color={companyAccent(rec.internship?.company ?? "")}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {rec.internship?.title}
+                      </p>
+                      <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                        <Building2 className="h-3 w-3" />
+                        {rec.internship?.company}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-success/10 px-2.5 py-1 text-xs font-bold text-success">
+                      {matchPercent(rec.match_score)}%
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
 
-            <select
-              value={remoteFilter}
-              onChange={(e) => setRemoteFilter(e.target.value)}
-              className="bg-black/40 border border-white/10 text-sm text-muted-foreground rounded-xl py-3 px-4 focus:outline-none focus:border-primary transition-colors w-full md:w-44"
-            >
-              <option value="all">All Styles</option>
-              <option value="remote">Remote Only</option>
-              <option value="on-site">On-site Only</option>
-            </select>
-          </div>
+          {/* Recent applications */}
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Recent applications
+              </h2>
+              <Link
+                href="/applications"
+                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                View all <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            {applications.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                You haven&apos;t applied to any internships yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {applications.slice(0, 4).map((app) => (
+                  <div
+                    key={app.id}
+                    className="flex items-center gap-4 rounded-xl border border-border p-3"
+                  >
+                    <Avatar
+                      name={app.internship?.company}
+                      size={40}
+                      color={companyAccent(app.internship?.company ?? "")}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {app.internship?.title ?? "Internship"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Applied {timeAgo(app.created_at)}
+                      </p>
+                    </div>
+                    <StatusBadge status={app.status} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
 
-        {/* Listings Grid */}
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-400 py-10">
-            Failed to load internship openings.
-          </div>
-        ) : data?.items.length === 0 ? (
-          <div className="text-center text-muted-foreground py-20">
-            No internships matched your search criteria.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {data?.items.map((internship) => (
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Profile completion */}
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+            <div className="mb-3 flex items-center gap-3">
+              <Avatar name={user?.full_name} size={44} />
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-foreground">
+                  {user?.full_name}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Profile completion</span>
+              <span className="font-semibold text-primary">{completion}%</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
               <div
-                key={internship.id}
-                className="glass-card rounded-2xl p-6 glass-card-hover flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-outfit text-xl font-bold text-white mb-1">
-                        {internship.title}
-                      </h3>
-                      <div className="flex items-center text-muted-foreground text-sm space-x-2">
-                        <Building2 className="w-4 h-4" />
-                        <span>{internship.company}</span>
-                      </div>
-                    </div>
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${completion}%` }}
+              />
+            </div>
+            <Button href="/profile" variant="outline" size="sm" className="mt-4 w-full">
+              <User className="h-4 w-4" /> Complete profile
+            </Button>
+          </section>
 
-                    {internship.is_pm_scheme && (
-                      <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium">
-                        PM Scheme
-                      </span>
-                    )}
+          {/* Resume status */}
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+            <h2 className="mb-3 font-heading text-base font-semibold text-foreground">
+              Resume status
+            </h2>
+            {activeResume ? (
+              <div className="rounded-xl border border-border p-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-primary">
+                    <FileText className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {activeResume.original_filename}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Uploaded {formatDate(activeResume.created_at)}
+                    </p>
                   </div>
-
-                  <p className="text-muted-foreground text-sm mb-6 line-clamp-3">
-                    {internship.description}
-                  </p>
                 </div>
-
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-y-2 text-sm text-muted-foreground border-t border-white/5 pt-4">
-                    <div className="flex items-center space-x-2 w-1/2">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      <span>{internship.is_remote ? "Remote" : internship.location || "N/A"}</span>
-                    </div>
-
-                    {internship.duration_weeks && (
-                      <div className="flex items-center space-x-2 w-1/2">
-                        <Calendar className="w-4 h-4 text-primary" />
-                        <span>{internship.duration_weeks} Weeks</span>
-                      </div>
-                    )}
-
-                    {internship.stipend_amount && (
-                      <div className="flex items-center space-x-2 w-1/2">
-                        <Award className="w-4 h-4 text-primary" />
-                        <span>₹{internship.stipend_amount}/Mo</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => router.push(`/recommendations`)}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-xl text-sm transition-all text-center glow-primary"
-                    >
-                      Check AI Match
-                    </button>
-                  </div>
+                <div className="mt-3">
+                  {activeResume.is_processed ? (
+                    <Badge variant="success">
+                      <CheckCircle2 className="h-3 w-3" /> Processed —{" "}
+                      {activeResume.skills.length} skills
+                    </Badge>
+                  ) : (
+                    <Badge variant="warning">
+                      <Clock className="h-3 w-3" /> Processing…
+                    </Badge>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
+            ) : resumes === undefined ? (
+              <Skeleton className="h-20 w-full rounded-xl" />
+            ) : (
+              <div className="rounded-xl border border-dashed border-border p-4 text-center">
+                <p className="mb-3 text-sm text-muted-foreground">
+                  No resume uploaded yet.
+                </p>
+                <Button href="/upload" variant="primary" size="sm" className="w-full">
+                  <UploadCloud className="h-4 w-4" /> Upload resume
+                </Button>
+              </div>
+            )}
+          </section>
+
+          {/* Notifications */}
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+            <h2 className="mb-3 flex items-center gap-2 font-heading text-base font-semibold text-foreground">
+              <Bell className="h-4 w-4 text-primary" /> Notifications
+            </h2>
+            {notifications.length === 0 ? (
+              <p className="py-2 text-sm text-muted-foreground">
+                You&apos;re all caught up.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {notifications.map((n, i) => (
+                  <li key={i} className="flex gap-3">
+                    <n.icon className={`mt-0.5 h-4 w-4 shrink-0 ${n.color}`} />
+                    <div>
+                      <p className="text-sm text-foreground">{n.text}</p>
+                      {n.time && (
+                        <p className="text-xs text-muted-foreground">{n.time}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      </div>
+    </DashboardShell>
   )
 }

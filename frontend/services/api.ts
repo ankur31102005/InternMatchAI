@@ -1,12 +1,16 @@
 import { useAuthStore } from "@/store/authStore"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
 interface FetchOptions extends RequestInit {
   json?: any
 }
 
-export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  options: FetchOptions = {}
+): Promise<T> {
   const token = useAuthStore.getState().token
   const headers = new Headers(options.headers || {})
 
@@ -37,6 +41,38 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
 
   if (response.status === 204) {
     return {} as T
+  }
+
+  return response.json() as Promise<T>
+}
+
+/**
+ * Multipart upload helper. Kept separate from apiFetch because FormData must
+ * not have its Content-Type set manually (the browser sets the boundary).
+ */
+export async function apiUpload<T>(
+  path: string,
+  formData: FormData
+): Promise<T> {
+  const token = useAuthStore.getState().token
+  const headers = new Headers()
+  if (token) headers.set("Authorization", `Bearer ${token}`)
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  })
+
+  if (!response.ok) {
+    let errorDetail = "Upload failed"
+    try {
+      const errBody = await response.json()
+      errorDetail = errBody.detail || errBody.error || errorDetail
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
   }
 
   return response.json() as Promise<T>
