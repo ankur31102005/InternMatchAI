@@ -9,8 +9,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.dependencies import CurrentAdmin, CurrentUser
-from app.core.exceptions import InternshipNotFoundError, http_404
+from app.core.dependencies import CurrentAdmin
+from app.core.exceptions import http_404
 from app.database import get_db
 from app.models.internship import Internship
 from app.schemas.internship import (
@@ -52,9 +52,7 @@ async def list_internships(
         )
 
     # Count total
-    count_result = await db.execute(
-        select(func.count()).select_from(query.subquery())
-    )
+    count_result = await db.execute(select(func.count()).select_from(query.subquery()))
     total = count_result.scalar_one()
 
     # Paginate
@@ -80,9 +78,7 @@ async def get_internship(
     db: AsyncSession = Depends(get_db),
 ) -> InternshipResponse:
     """Retrieve a single internship by its UUID."""
-    result = await db.execute(
-        select(Internship).where(Internship.id == internship_id)
-    )
+    result = await db.execute(select(Internship).where(Internship.id == internship_id))
     internship = result.scalar_one_or_none()
     if not internship:
         raise http_404(f"Internship {internship_id} not found.")
@@ -120,9 +116,7 @@ async def update_internship(
     db: AsyncSession = Depends(get_db),
 ) -> InternshipResponse:
     """Partially update an internship. Requires admin privileges."""
-    result = await db.execute(
-        select(Internship).where(Internship.id == internship_id)
-    )
+    result = await db.execute(select(Internship).where(Internship.id == internship_id))
     internship = result.scalar_one_or_none()
     if not internship:
         raise http_404(f"Internship {internship_id} not found.")

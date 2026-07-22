@@ -30,7 +30,6 @@ from app.core.exceptions import InternMatchError
 from app.database import engine
 from app.models import *  # noqa: F401, F403 – ensure all models are registered
 
-
 # ── Lifespan ──────────────────────────────────────────────────
 
 
@@ -40,14 +39,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"   Environment : {settings.ENVIRONMENT}")
     logger.info(f"   Debug mode  : {settings.DEBUG}")
-    
+
     if "sqlite" in settings.DATABASE_URL:
         logger.info("ℹ️ SQLite database detected. Auto-creating database tables...")
         from app.database import Base
+
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Database tables created successfully.")
-        
+
     yield
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")
     await engine.dispose()
@@ -109,7 +109,10 @@ def create_application() -> FastAPI:
         logger.exception(f"Unhandled error on {request.url}: {exc}")
         return JSONResponse(
             status_code=500,
-            content={"error": "InternalServerError", "detail": "An unexpected error occurred."},
+            content={
+                "error": "InternalServerError",
+                "detail": "An unexpected error occurred.",
+            },
         )
 
     # ── Routers ───────────────────────────────────────────────

@@ -2,12 +2,11 @@
 Resume upload and management API routes.
 """
 
-import os
 import uuid
 from pathlib import Path
 
 import aiofiles
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, UploadFile
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +23,7 @@ import json
 import httpx
 import docx
 import PyPDF2
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, BackgroundTasks
+from fastapi import BackgroundTasks
 from app.database import AsyncSessionLocal
 from app.models.skill import Skill
 from app.models.resume import ResumeSkill
@@ -85,7 +84,11 @@ def extract_academic_info(text: str):
     gpa = "8.2"
 
     # GPA regex
-    gpa_match = re.search(r'(?:CGPA|GPA|c\.g\.p\.a\.|g\.p\.a\.)\s*(?:of|is|:)?\s*([0-9]+(?:\.[0-9]+)?)(?:\s*/\s*10)?', text, re.IGNORECASE)
+    gpa_match = re.search(
+        r"(?:CGPA|GPA|c\.g\.p\.a\.|g\.p\.a\.)\s*(?:of|is|:)?\s*([0-9]+(?:\.[0-9]+)?)(?:\s*/\s*10)?",
+        text,
+        re.IGNORECASE,
+    )
     if gpa_match:
         val = float(gpa_match.group(1))
         if val <= 4.0:
@@ -104,10 +107,16 @@ def extract_academic_info(text: str):
         ("Bachelor of Science", ["b.sc", "bsc", "bachelor of science"]),
         ("Master of Science", ["m.sc", "msc", "master of science"]),
         ("Bachelor of Commerce", ["b.com", "bcom", "bachelor of commerce"]),
-        ("Master of Business Administration", ["mba", "master of business administration"]),
+        (
+            "Master of Business Administration",
+            ["mba", "master of business administration"],
+        ),
     ]
     for deg_name, keywords in degrees:
-        if any(re.search(r'\b' + re.escape(kw) + r'\b', text, re.IGNORECASE) for kw in keywords):
+        if any(
+            re.search(r"\b" + re.escape(kw) + r"\b", text, re.IGNORECASE)
+            for kw in keywords
+        ):
             degree = deg_name
             break
 
@@ -123,7 +132,10 @@ def extract_academic_info(text: str):
         ("Economics", ["economics", "eco"]),
     ]
     for maj_name, keywords in majors:
-        if any(re.search(r'\b' + re.escape(kw) + r'\b', text, re.IGNORECASE) for kw in keywords):
+        if any(
+            re.search(r"\b" + re.escape(kw) + r"\b", text, re.IGNORECASE)
+            for kw in keywords
+        ):
             major = maj_name
             break
 
@@ -156,30 +168,46 @@ async def process_resume_task(resume_id: uuid.UUID, file_path_str: str, ext: str
             ai_service_url = f"{settings.AI_SERVICE_URL}/extract-skills"
             logger.info(f"Calling AI service for skill extraction at {ai_service_url}")
             async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(ai_service_url, json={"text": extracted_text})
+                response = await client.post(
+                    ai_service_url, json={"text": extracted_text}
+                )
                 response.raise_for_status()
                 ai_data = response.json()
             extracted_skills = ai_data.get("skills", [])
-            logger.info(f"AI service returned {len(extracted_skills)} skills for resume {resume_id}")
+            logger.info(
+                f"AI service returned {len(extracted_skills)} skills for resume {resume_id}"
+            )
         except Exception as ai_err:
-            logger.warning(f"AI service call failed ({ai_err}). Running local fallback skill extraction...")
+            logger.warning(
+                f"AI service call failed ({ai_err}). Running local fallback skill extraction..."
+            )
             async with AsyncSessionLocal() as db_sub:
                 res_all = await db_sub.execute(select(Skill))
                 db_skills = res_all.scalars().all()
                 text_lower = extracted_text.lower()
                 for db_s in db_skills:
-                    pat = r'\b' + re.escape(db_s.name.lower()) + r'\b'
+                    pat = r"\b" + re.escape(db_s.name.lower()) + r"\b"
                     if re.search(pat, text_lower):
-                        extracted_skills.append({
-                            "name": db_s.name,
-                            "category": db_s.category,
-                            "confidence": 0.85
-                        })
+                        extracted_skills.append(
+                            {
+                                "name": db_s.name,
+                                "category": db_s.category,
+                                "confidence": 0.85,
+                            }
+                        )
             # If still empty, assign default foundational skills
             if not extracted_skills:
                 extracted_skills = [
-                    {"name": "Python", "category": "Programming Languages", "confidence": 0.90},
-                    {"name": "Data Analysis", "category": "Data Science", "confidence": 0.85},
+                    {
+                        "name": "Python",
+                        "category": "Programming Languages",
+                        "confidence": 0.90,
+                    },
+                    {
+                        "name": "Data Analysis",
+                        "category": "Data Science",
+                        "confidence": 0.85,
+                    },
                     {"name": "SQL", "category": "Databases", "confidence": 0.80},
                 ]
 
@@ -212,23 +240,22 @@ async def process_resume_task(resume_id: uuid.UUID, file_path_str: str, ext: str
 
                 # Link skill to resume
                 stmt_assoc = select(ResumeSkill).where(
-                    ResumeSkill.resume_id == resume_id,
-                    ResumeSkill.skill_id == skill.id
+                    ResumeSkill.resume_id == resume_id, ResumeSkill.skill_id == skill.id
                 )
                 res_assoc = await db.execute(stmt_assoc)
                 assoc = res_assoc.scalar_one_or_none()
 
                 if not assoc:
                     assoc = ResumeSkill(
-                        resume_id=resume_id,
-                        skill_id=skill.id,
-                        confidence=confidence
+                        resume_id=resume_id, skill_id=skill.id, confidence=confidence
                     )
                     db.add(assoc)
 
             # Auto-populate student profile using extracted details
             gpa, degree, major = extract_academic_info(extracted_text)
-            stmt_prof = select(StudentProfile).where(StudentProfile.user_id == resume.user_id)
+            stmt_prof = select(StudentProfile).where(
+                StudentProfile.user_id == resume.user_id
+            )
             res_prof = await db.execute(stmt_prof)
             profile = res_prof.scalar_one_or_none()
 
@@ -239,7 +266,7 @@ async def process_resume_task(resume_id: uuid.UUID, file_path_str: str, ext: str
                     degree=degree,
                     major=major,
                     gpa=gpa,
-                    is_eligible_for_pm_scheme=True
+                    is_eligible_for_pm_scheme=True,
                 )
                 db.add(profile)
             else:
@@ -253,7 +280,9 @@ async def process_resume_task(resume_id: uuid.UUID, file_path_str: str, ext: str
 
             resume.is_processed = True
             await db.commit()
-            logger.info(f"Background processing completed successfully for resume {resume_id}")
+            logger.info(
+                f"Background processing completed successfully for resume {resume_id}"
+            )
 
     except Exception as e:
         logger.exception(f"Error processing resume {resume_id} in background: {e}")
@@ -368,9 +397,7 @@ async def get_resume(
 ) -> ResumeResponse:
     """Get details of a specific resume. Only accessible by the owner."""
     result = await db.execute(
-        select(Resume).where(
-            Resume.id == resume_id, Resume.user_id == current_user.id
-        )
+        select(Resume).where(Resume.id == resume_id, Resume.user_id == current_user.id)
     )
     resume = result.scalar_one_or_none()
     if not resume:
@@ -390,9 +417,7 @@ async def delete_resume(
 ) -> None:
     """Soft-delete a resume (marks as inactive)."""
     result = await db.execute(
-        select(Resume).where(
-            Resume.id == resume_id, Resume.user_id == current_user.id
-        )
+        select(Resume).where(Resume.id == resume_id, Resume.user_id == current_user.id)
     )
     resume = result.scalar_one_or_none()
     if not resume:

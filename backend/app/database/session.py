@@ -14,10 +14,7 @@ if "sqlite" not in settings.DATABASE_URL:
     engine_kwargs["pool_size"] = 10
     engine_kwargs["max_overflow"] = 20
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    **engine_kwargs
-)
+engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
 
 # ── Session Factory ───────────────────────────────────────────
 AsyncSessionLocal = async_sessionmaker(
@@ -32,6 +29,7 @@ AsyncSessionLocal = async_sessionmaker(
 # ── Declarative Base ──────────────────────────────────────────
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy ORM models."""
+
     pass
 
 

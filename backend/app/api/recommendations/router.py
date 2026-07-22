@@ -3,8 +3,6 @@ Recommendations API routes – AI-powered recommendation engine integration.
 """
 
 import json
-import uuid
-from datetime import datetime, timezone
 import httpx
 from loguru import logger
 from fastapi import APIRouter, Depends, Query
@@ -20,7 +18,10 @@ from app.models.recommendation import Recommendation
 from app.models.resume import Resume, ResumeSkill
 from app.models.skill import Skill
 from app.models.student_profile import StudentProfile
-from app.schemas.recommendation import RecommendationListResponse, RecommendationResponse
+from app.schemas.recommendation import (
+    RecommendationListResponse,
+    RecommendationResponse,
+)
 
 router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
 
@@ -41,7 +42,7 @@ async def get_recommendations(
     # 1. Fetch user's latest active resume
     stmt_resume = (
         select(Resume)
-        .where(Resume.user_id == current_user.id, Resume.is_active == True)
+        .where(Resume.user_id == current_user.id, Resume.is_active.is_(True))
         .order_by(Resume.created_at.desc())
     )
     res_resume = await db.execute(stmt_resume)
@@ -65,15 +66,25 @@ async def get_recommendations(
     res_prof = await db.execute(stmt_prof)
     profile = res_prof.scalar_one_or_none()
 
-    gpa_val = float(profile.gpa) if (profile and profile.gpa and profile.gpa.replace('.', '', 1).isdigit()) else 8.0
-    degree_val = profile.degree if (profile and profile.degree) else "Bachelor of Technology"
+    gpa_val = (
+        float(profile.gpa)
+        if (profile and profile.gpa and profile.gpa.replace(".", "", 1).isdigit())
+        else 8.0
+    )
+    degree_val = (
+        profile.degree if (profile and profile.degree) else "Bachelor of Technology"
+    )
     major_val = profile.major if (profile and profile.major) else "Computer Science"
 
     # 4. Fetch all active internships with required skills
     stmt_internships = (
         select(Internship)
-        .options(selectinload(Internship.internship_skills).selectinload(InternshipSkill.skill))
-        .where(Internship.is_active == True)
+        .options(
+            selectinload(Internship.internship_skills).selectinload(
+                InternshipSkill.skill
+            )
+        )
+        .where(Internship.is_active.is_(True))
     )
     res_internships = await db.execute(stmt_internships)
     internships = list(res_internships.scalars().all())
@@ -91,13 +102,17 @@ async def get_recommendations(
 
     internship_payloads = []
     for intern in internships:
-        req_skills = [is_obj.skill.name for is_obj in intern.internship_skills if is_obj.skill]
-        internship_payloads.append({
-            "id": str(intern.id),
-            "min_gpa": float(intern.min_gpa) if intern.min_gpa is not None else 0.0,
-            "required_skills": req_skills,
-            "required_degree": intern.required_degree or "Any",
-        })
+        req_skills = [
+            is_obj.skill.name for is_obj in intern.internship_skills if is_obj.skill
+        ]
+        internship_payloads.append(
+            {
+                "id": str(intern.id),
+                "min_gpa": float(intern.min_gpa) if intern.min_gpa is not None else 0.0,
+                "required_skills": req_skills,
+                "required_degree": intern.required_degree or "Any",
+            }
+        )
 
     rank_request = {
         "candidate": candidate_payload,
@@ -117,21 +132,31 @@ async def get_recommendations(
         logger.error(f"Failed to call AI service for ranking: {e}")
         # Fallback scoring if AI service is unreachable
         for intern in internships:
-            req_skills = set(is_obj.skill.name.lower() for is_obj in intern.internship_skills if is_obj.skill)
+            req_skills = set(
+                is_obj.skill.name.lower()
+                for is_obj in intern.internship_skills
+                if is_obj.skill
+            )
             u_skills = set(s.lower() for s in user_skills)
             matched = req_skills.intersection(u_skills)
-            score = round(len(matched) / max(len(req_skills), 1), 2) if req_skills else 0.75
-            rank_results.append({
-                "internship_id": str(intern.id),
-                "match_score": score,
-                "explanation": {
-                    "text_summary": f"Strong skill alignment with {len(matched)} matching skills.",
-                    "shap_values": {"skills_overlap": score}
+            score = (
+                round(len(matched) / max(len(req_skills), 1), 2) if req_skills else 0.75
+            )
+            rank_results.append(
+                {
+                    "internship_id": str(intern.id),
+                    "match_score": score,
+                    "explanation": {
+                        "text_summary": f"Strong skill alignment with {len(matched)} matching skills.",
+                        "shap_values": {"skills_overlap": score},
+                    },
                 }
-            })
+            )
 
     # 7. Map & save recommendation records to DB
-    await db.execute(delete(Recommendation).where(Recommendation.user_id == current_user.id))
+    await db.execute(
+        delete(Recommendation).where(Recommendation.user_id == current_user.id)
+    )
 
     sorted_results = sorted(rank_results, key=lambda x: x["match_score"], reverse=True)
     recommendations_to_add = []
@@ -149,7 +174,9 @@ async def get_recommendations(
         if not intern_obj:
             continue
 
-        req_skill_names = [is_obj.skill.name for is_obj in intern_obj.internship_skills if is_obj.skill]
+        req_skill_names = [
+            is_obj.skill.name for is_obj in intern_obj.internship_skills if is_obj.skill
+        ]
         user_skill_set = set(s.lower() for s in user_skills)
 
         matched_skills = [s for s in req_skill_names if s.lower() in user_skill_set]
@@ -201,5 +228,5 @@ async def get_recommendations(
 
     return RecommendationListResponse(
         total=len(final_items),
-        items=[RecommendationResponse.model_validate(r) for r in final_items]
+        items=[RecommendationResponse.model_validate(r) for r in final_items],
     )

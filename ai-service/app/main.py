@@ -7,15 +7,16 @@ Responsible for:
 """
 
 from contextlib import asynccontextmanager
+import re
 from typing import List, Optional
 import uuid
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from loguru import logger
 
-
 # ── Lifespan / Startup ────────────────────────────────────────
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +35,7 @@ app = FastAPI(
 
 
 # ── Schemas ───────────────────────────────────────────────────
+
 
 class SkillExtractRequest(BaseModel):
     text: str = Field(..., description="Raw text extracted from the resume")
@@ -116,7 +118,6 @@ KNOWN_SKILLS = [
 
 # ── API Endpoints ─────────────────────────────────────────────
 
-import re
 
 @app.post("/extract-skills", response_model=SkillExtractResponse)
 async def extract_skills(payload: SkillExtractRequest):
@@ -126,20 +127,18 @@ async def extract_skills(payload: SkillExtractRequest):
     logger.info("Extracting skills from resume text...")
     text = payload.text or ""
     text_lower = text.lower()
-    
+
     extracted: List[ExtractedSkill] = []
     seen = set()
 
     for skill_name, category in KNOWN_SKILLS:
-        pattern = r'\b' + re.escape(skill_name.lower()) + r'\b'
+        pattern = r"\b" + re.escape(skill_name.lower()) + r"\b"
         if re.search(pattern, text_lower):
             if skill_name.lower() not in seen:
                 seen.add(skill_name.lower())
-                extracted.append(ExtractedSkill(
-                    name=skill_name,
-                    category=category,
-                    confidence=0.95
-                ))
+                extracted.append(
+                    ExtractedSkill(name=skill_name, category=category, confidence=0.95)
+                )
 
     # If no standard skills matched, check for common tech terms
     if not extracted:
@@ -152,11 +151,9 @@ async def extract_skills(payload: SkillExtractRequest):
         for name, category in tech_keywords:
             if name.lower() not in seen:
                 seen.add(name.lower())
-                extracted.append(ExtractedSkill(
-                    name=name,
-                    category=category,
-                    confidence=0.80
-                ))
+                extracted.append(
+                    ExtractedSkill(name=name, category=category, confidence=0.80)
+                )
 
     logger.info(f"Extracted {len(extracted)} skills from text.")
     return {"skills": extracted}
@@ -168,22 +165,30 @@ async def rank_internships(payload: RankRequest):
     Calculate compatibility scores between a candidate profile and a list of internships.
     """
     logger.info(f"Ranking {len(payload.internships)} internships for candidate...")
-    
+
     candidate_skills = set(s.lower() for s in payload.candidate.skills)
     results = []
 
     for intern in payload.internships:
         req_skills = intern.required_skills or []
         req_skills_lower = set(s.lower() for s in req_skills)
-        
+
         matched_set = req_skills_lower.intersection(candidate_skills)
         matched_names = [s for s in req_skills if s.lower() in candidate_skills]
-        
-        skill_ratio = len(matched_set) / max(len(req_skills_lower), 1) if req_skills_lower else 0.75
-        
+
+        skill_ratio = (
+            len(matched_set) / max(len(req_skills_lower), 1)
+            if req_skills_lower
+            else 0.75
+        )
+
         # GPA alignment
-        gpa_score = 1.0 if payload.candidate.gpa >= intern.min_gpa else max(0.4, payload.candidate.gpa / max(intern.min_gpa, 1.0))
-        
+        gpa_score = (
+            1.0
+            if payload.candidate.gpa >= intern.min_gpa
+            else max(0.4, payload.candidate.gpa / max(intern.min_gpa, 1.0))
+        )
+
         # Calculate composite match score
         raw_score = 0.70 * skill_ratio + 0.30 * gpa_score
         match_score = round(max(0.05, min(raw_score, 1.0)), 2)
@@ -200,16 +205,16 @@ async def rank_internships(payload: RankRequest):
             shap_values={
                 "skills_overlap": round(0.70 * skill_ratio, 2),
                 "gpa_match": round(0.30 * gpa_score, 2),
-                "degree_alignment": 0.10
+                "degree_alignment": 0.10,
             },
-            text_summary=summary
+            text_summary=summary,
         )
 
         results.append(
             InternshipRankResult(
                 internship_id=intern.id,
                 match_score=match_score,
-                explanation=explanation
+                explanation=explanation,
             )
         )
 

@@ -9,7 +9,6 @@ from app.core.dependencies import CurrentUser
 from app.core.exceptions import (
     UserAlreadyExistsError,
     InvalidCredentialsError,
-    http_400,
     http_401,
     http_409,
 )

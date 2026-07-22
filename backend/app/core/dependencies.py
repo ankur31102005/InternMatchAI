@@ -20,9 +20,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
-    ],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
@@ -59,6 +57,7 @@ async def get_current_admin(
     """Require the current user to be an admin."""
     if not current_user.is_admin:
         from app.core.exceptions import http_403
+
         raise http_403("Admin access required.")
     return current_user
 

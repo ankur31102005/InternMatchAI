@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 
 class InternMatchError(Exception):
     """Base exception for all application errors."""
+
     pass
 
 
@@ -47,6 +48,7 @@ class InternshipNotActiveError(InternMatchError):
 
 
 # ── HTTP Exception Factories ──────────────────────────────────
+
 
 def http_400(detail: str) -> HTTPException:
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)

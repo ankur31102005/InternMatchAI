@@ -2,10 +2,9 @@
 User model – represents platform users (students & admins).
 """
 
-import uuid
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Boolean, String, Text
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -41,7 +40,10 @@ class User(Base, UUIDMixin, TimestampMixin):
 
     # ── Relationships ─────────────────────────────────────────
     profile: Mapped[Optional["StudentProfile"]] = relationship(
-        "StudentProfile", back_populates="user", uselist=False, cascade="all, delete-orphan"
+        "StudentProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
     resumes: Mapped[List["Resume"]] = relationship(
         "Resume", back_populates="user", cascade="all, delete-orphan"

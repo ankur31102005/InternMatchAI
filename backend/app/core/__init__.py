@@ -1,4 +1,5 @@
 """Core package init."""
+
 from app.core.exceptions import (
     InternMatchError,
     UserAlreadyExistsError,
@@ -10,7 +11,12 @@ from app.core.exceptions import (
     UnsupportedFileTypeError,
     ApplicationAlreadyExistsError,
 )
-from app.core.dependencies import get_current_user, get_current_admin, CurrentUser, CurrentAdmin
+from app.core.dependencies import (
+    get_current_user,
+    get_current_admin,
+    CurrentUser,
+    CurrentAdmin,
+)
 
 __all__ = [
     "InternMatchError",

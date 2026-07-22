@@ -34,7 +34,9 @@ class Internship(Base, UUIDMixin, TimestampMixin):
 
     # ── Duration & Compensation ───────────────────────────────
     duration_weeks: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    stipend_amount: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)
+    stipend_amount: Mapped[Optional[float]] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     stipend_currency: Mapped[str] = mapped_column(
         String(10), default="INR", nullable=False
     )
