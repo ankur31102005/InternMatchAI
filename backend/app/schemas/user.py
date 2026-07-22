@@ -8,7 +8,6 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-
 # ── Auth Schemas ──────────────────────────────────────────────
 
 
@@ -78,4 +77,5 @@ class UserResponse(UserBase):
 
 class UserMeResponse(UserResponse):
     """Extended response for GET /auth/me including profile."""
+
     pass

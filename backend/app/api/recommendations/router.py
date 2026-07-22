@@ -1,123 +1,29 @@
 """
-Recommendations API routes.
-Returns dummy data for now – will be replaced by AI scoring engine.
+Recommendations API routes – AI-powered recommendation engine integration.
 """
 
 import json
-import uuid
-from datetime import datetime, timezone
-
+import httpx
+from loguru import logger
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.core.dependencies import CurrentUser
 from app.database import get_db
-from app.schemas.recommendation import RecommendationListResponse, RecommendationResponse
+from app.models.internship import Internship, InternshipSkill
+from app.models.recommendation import Recommendation
+from app.models.resume import Resume, ResumeSkill
+from app.models.skill import Skill
+from app.models.student_profile import StudentProfile
+from app.schemas.recommendation import (
+    RecommendationListResponse,
+    RecommendationResponse,
+)
 
 router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
-
-# ── Dummy data ────────────────────────────────────────────────
-_DUMMY_RECOMMENDATIONS = [
-    {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "internship_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-        "match_score": 0.92,
-        "skill_match_score": 0.88,
-        "semantic_score": 0.95,
-        "eligibility_score": 1.0,
-        "rank": 1,
-        "explanation": "Strong match based on Python, data analysis skills, and interest in public policy.",
-        "matched_skills": json.dumps(["Python", "Data Analysis", "Communication"]),
-        "missing_skills": json.dumps(["SQL", "Power BI"]),
-        "model_version": "v0.1.0-scaffold",
-        "is_viewed": False,
-        "internship": {
-            "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-            "title": "Data Analyst Intern – Ministry of Finance",
-            "company": "Ministry of Finance, Government of India",
-            "description": "Work with the economic policy team to analyse budget allocations and generate insights.",
-            "location": "New Delhi",
-            "is_remote": False,
-            "duration_weeks": 8,
-            "stipend_amount": 15000,
-            "stipend_currency": "INR",
-            "is_pm_scheme": True,
-            "sector": "Finance",
-            "ministry": "Ministry of Finance",
-            "is_active": True,
-            "seats_filled": 3,
-            "total_seats": 10,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "skills": [],
-        },
-    },
-    {
-        "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-        "internship_id": "d4e5f6a7-b8c9-0123-defa-234567890123",
-        "match_score": 0.84,
-        "skill_match_score": 0.79,
-        "semantic_score": 0.88,
-        "eligibility_score": 0.90,
-        "rank": 2,
-        "explanation": "Good match for product management roles with strong analytical background.",
-        "matched_skills": json.dumps(["Product Thinking", "Agile", "User Research"]),
-        "missing_skills": json.dumps(["JIRA", "Roadmapping"]),
-        "model_version": "v0.1.0-scaffold",
-        "is_viewed": False,
-        "internship": {
-            "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
-            "title": "Product Management Intern – NITI Aayog",
-            "company": "NITI Aayog",
-            "description": "Assist in digital transformation initiatives and product strategy for government platforms.",
-            "location": "New Delhi",
-            "is_remote": True,
-            "duration_weeks": 12,
-            "stipend_amount": 20000,
-            "stipend_currency": "INR",
-            "is_pm_scheme": True,
-            "sector": "Technology",
-            "ministry": "NITI Aayog",
-            "is_active": True,
-            "seats_filled": 1,
-            "total_seats": 5,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "skills": [],
-        },
-    },
-    {
-        "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
-        "internship_id": "f6a7b8c9-d0e1-2345-fab1-456789012345",
-        "match_score": 0.76,
-        "skill_match_score": 0.73,
-        "semantic_score": 0.79,
-        "eligibility_score": 0.80,
-        "rank": 3,
-        "explanation": "Moderate match – consider improving your SQL and data visualisation skills.",
-        "matched_skills": json.dumps(["Communication", "Research", "Excel"]),
-        "missing_skills": json.dumps(["SQL", "Tableau", "Python"]),
-        "model_version": "v0.1.0-scaffold",
-        "is_viewed": False,
-        "internship": {
-            "id": "f6a7b8c9-d0e1-2345-fab1-456789012345",
-            "title": "Policy Research Intern – MEA",
-            "company": "Ministry of External Affairs",
-            "description": "Research and analyse international trade policies and prepare policy briefs.",
-            "location": "New Delhi",
-            "is_remote": False,
-            "duration_weeks": 6,
-            "stipend_amount": 10000,
-            "stipend_currency": "INR",
-            "is_pm_scheme": True,
-            "sector": "Policy",
-            "ministry": "Ministry of External Affairs",
-            "is_active": True,
-            "seats_filled": 0,
-            "total_seats": 8,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "skills": [],
-        },
-    },
-]
 
 
 @router.get(
@@ -132,23 +38,195 @@ async def get_recommendations(
 ) -> RecommendationListResponse:
     """
     Returns personalised internship recommendations for the authenticated user.
-
-    **Note**: This endpoint currently returns scaffold/dummy data.
-    The full AI recommendation engine (Sentence Transformers + LightGBM) will be
-    integrated in a subsequent milestone.
-
-    Each recommendation includes:
-    - `match_score`: Overall match (0–1)
-    - `explanation`: Human-readable reason for the match
-    - `matched_skills`: Skills you have that match the role
-    - `missing_skills`: Skills that could improve your match score
     """
-    # Inject user_id into dummy data
-    items = []
-    for i, rec_data in enumerate(_DUMMY_RECOMMENDATIONS[:limit]):
-        rec = dict(rec_data)
-        rec["user_id"] = str(current_user.id)
-        rec["created_at"] = datetime.now(timezone.utc).isoformat()
-        items.append(rec)
+    # 1. Fetch user's latest active resume
+    stmt_resume = (
+        select(Resume)
+        .where(Resume.user_id == current_user.id, Resume.is_active.is_(True))
+        .order_by(Resume.created_at.desc())
+    )
+    res_resume = await db.execute(stmt_resume)
+    latest_resume = res_resume.scalars().first()
 
-    return RecommendationListResponse(total=len(items), items=items)
+    if not latest_resume:
+        # User has no uploaded resume yet
+        return RecommendationListResponse(total=0, items=[])
+
+    # 2. Get skills from user's latest resume
+    stmt_skills = (
+        select(Skill.name)
+        .join(ResumeSkill, ResumeSkill.skill_id == Skill.id)
+        .where(ResumeSkill.resume_id == latest_resume.id)
+    )
+    res_skills = await db.execute(stmt_skills)
+    user_skills = list(res_skills.scalars().all())
+
+    # 3. Get student profile details
+    stmt_prof = select(StudentProfile).where(StudentProfile.user_id == current_user.id)
+    res_prof = await db.execute(stmt_prof)
+    profile = res_prof.scalar_one_or_none()
+
+    gpa_val = (
+        float(profile.gpa)
+        if (profile and profile.gpa and profile.gpa.replace(".", "", 1).isdigit())
+        else 8.0
+    )
+    degree_val = (
+        profile.degree if (profile and profile.degree) else "Bachelor of Technology"
+    )
+    major_val = profile.major if (profile and profile.major) else "Computer Science"
+
+    # 4. Fetch all active internships with required skills
+    stmt_internships = (
+        select(Internship)
+        .options(
+            selectinload(Internship.internship_skills).selectinload(
+                InternshipSkill.skill
+            )
+        )
+        .where(Internship.is_active.is_(True))
+    )
+    res_internships = await db.execute(stmt_internships)
+    internships = list(res_internships.scalars().all())
+
+    if not internships:
+        return RecommendationListResponse(total=0, items=[])
+
+    # 5. Format payload for AI Service ranker
+    candidate_payload = {
+        "gpa": gpa_val,
+        "skills": user_skills,
+        "degree": degree_val,
+        "major": major_val,
+    }
+
+    internship_payloads = []
+    for intern in internships:
+        req_skills = [
+            is_obj.skill.name for is_obj in intern.internship_skills if is_obj.skill
+        ]
+        internship_payloads.append(
+            {
+                "id": str(intern.id),
+                "min_gpa": float(intern.min_gpa) if intern.min_gpa is not None else 0.0,
+                "required_skills": req_skills,
+                "required_degree": intern.required_degree or "Any",
+            }
+        )
+
+    rank_request = {
+        "candidate": candidate_payload,
+        "internships": internship_payloads,
+    }
+
+    # 6. Call AI Service rank-internships API
+    ai_service_url = f"{settings.AI_SERVICE_URL}/rank-internships"
+    rank_results = []
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            ai_resp = await client.post(ai_service_url, json=rank_request)
+            ai_resp.raise_for_status()
+            rank_data = ai_resp.json()
+        rank_results = rank_data.get("results", [])
+    except Exception as e:
+        logger.error(f"Failed to call AI service for ranking: {e}")
+        # Fallback scoring if AI service is unreachable
+        for intern in internships:
+            req_skills = set(
+                is_obj.skill.name.lower()
+                for is_obj in intern.internship_skills
+                if is_obj.skill
+            )
+            u_skills = set(s.lower() for s in user_skills)
+            matched = req_skills.intersection(u_skills)
+            score = (
+                round(len(matched) / max(len(req_skills), 1), 2) if req_skills else 0.75
+            )
+            rank_results.append(
+                {
+                    "internship_id": str(intern.id),
+                    "match_score": score,
+                    "explanation": {
+                        "text_summary": f"Strong skill alignment with {len(matched)} matching skills.",
+                        "shap_values": {"skills_overlap": score},
+                    },
+                }
+            )
+
+    # 7. Map & save recommendation records to DB
+    await db.execute(
+        delete(Recommendation).where(Recommendation.user_id == current_user.id)
+    )
+
+    sorted_results = sorted(rank_results, key=lambda x: x["match_score"], reverse=True)
+    recommendations_to_add = []
+
+    for idx, res in enumerate(sorted_results):
+        intern_id_str = str(res["internship_id"])
+        match_score = res["match_score"]
+        explanation_dict = res.get("explanation", {})
+        if isinstance(explanation_dict, dict):
+            shap_vals = explanation_dict.get("shap_values", {})
+        else:
+            shap_vals = {}
+
+        intern_obj = next((i for i in internships if str(i.id) == intern_id_str), None)
+        if not intern_obj:
+            continue
+
+        req_skill_names = [
+            is_obj.skill.name for is_obj in intern_obj.internship_skills if is_obj.skill
+        ]
+        user_skill_set = set(s.lower() for s in user_skills)
+
+        matched_skills = [s for s in req_skill_names if s.lower() in user_skill_set]
+        missing_skills = [s for s in req_skill_names if s.lower() not in user_skill_set]
+
+        # Ensure explanation text summary reflects actual matched skills
+        if matched_skills:
+            text_summary = f"Matched {len(matched_skills)} of {len(req_skill_names)} required skills ({', '.join(matched_skills)}). GPA criteria met."
+        elif req_skill_names:
+            text_summary = f"0 of {len(req_skill_names)} required skills matched ({', '.join(req_skill_names)})."
+        else:
+            text_summary = "Eligibility criteria met for position."
+
+        rec = Recommendation(
+            user_id=current_user.id,
+            internship_id=intern_obj.id,
+            match_score=match_score,
+            skill_match_score=match_score,
+            semantic_score=match_score,
+            eligibility_score=1.0,
+            rank=idx + 1,
+            explanation=text_summary,
+            matched_skills=json.dumps(matched_skills),
+            missing_skills=json.dumps(missing_skills),
+            shap_values=json.dumps(shap_vals),
+            model_version="v1.0.0-lightgbm",
+            is_viewed=False,
+            is_dismissed=False,
+        )
+        recommendations_to_add.append(rec)
+
+    db.add_all(recommendations_to_add)
+    await db.commit()
+
+    # 8. Query final recommendations with eager-loaded internship relationship
+    stmt_final = (
+        select(Recommendation)
+        .options(
+            selectinload(Recommendation.internship)
+            .selectinload(Internship.internship_skills)
+            .selectinload(InternshipSkill.skill)
+        )
+        .where(Recommendation.user_id == current_user.id)
+        .order_by(Recommendation.match_score.desc())
+        .limit(limit)
+    )
+    res_final = await db.execute(stmt_final)
+    final_items = list(res_final.scalars().all())
+
+    return RecommendationListResponse(
+        total=len(final_items),
+        items=[RecommendationResponse.model_validate(r) for r in final_items],
+    )

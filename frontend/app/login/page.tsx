@@ -51,7 +51,7 @@ export default function LoginPage() {
 
       // 3. Save auth details inside store
       setAuth(user, token)
-      router.push("/dashboard")
+      router.push("/upload")
     } catch (err: any) {
       setServerError(err.message || "Invalid credentials. Please check and try again.")
     } finally {

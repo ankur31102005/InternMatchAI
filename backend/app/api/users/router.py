@@ -3,14 +3,10 @@ Users API routes – profile management.
 """
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import CurrentUser
-from app.core.exceptions import http_404
 from app.database import get_db
-from app.models.student_profile import StudentProfile
-from app.models.user import User
 from app.schemas.user import UserResponse, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
