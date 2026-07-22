@@ -47,9 +47,7 @@ async def list_applications(
         .order_by(Application.created_at.desc())
     )
 
-    count_result = await db.execute(
-        select(func.count()).select_from(query.subquery())
-    )
+    count_result = await db.execute(select(func.count()).select_from(query.subquery()))
     total = count_result.scalar_one()
 
     query = query.offset((page - 1) * per_page).limit(per_page)

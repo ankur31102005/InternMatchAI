@@ -3,7 +3,6 @@ Authentication service – business logic for register, login, token validation.
 """
 
 import uuid
-from typing import Optional
 
 from loguru import logger
 from sqlalchemy import select
@@ -68,9 +67,7 @@ class AuthService:
         Raises:
             InvalidCredentialsError: If credentials are incorrect.
         """
-        result = await self._db.execute(
-            select(User).where(User.email == email.lower())
-        )
+        result = await self._db.execute(select(User).where(User.email == email.lower()))
         user = result.scalar_one_or_none()
 
         if not user or not verify_password(password, user.hashed_password):
@@ -90,9 +87,7 @@ class AuthService:
         Raises:
             UserNotFoundError: If user does not exist.
         """
-        result = await self._db.execute(
-            select(User).where(User.id == user_id)
-        )
+        result = await self._db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
         if not user:
             raise UserNotFoundError(f"User {user_id} not found.")

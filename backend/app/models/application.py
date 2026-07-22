@@ -5,8 +5,7 @@ Application model – tracks a student's application to an internship.
 import uuid
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -27,13 +26,13 @@ class Application(Base, UUIDMixin, TimestampMixin):
 
     # ── FKs ───────────────────────────────────────────────────
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     internship_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("internships.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

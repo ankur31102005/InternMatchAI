@@ -6,8 +6,7 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Date, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -27,7 +26,7 @@ class StudentProfile(Base, UUIDMixin, TimestampMixin):
 
     # ── FK ────────────────────────────────────────────────────
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
         nullable=False,

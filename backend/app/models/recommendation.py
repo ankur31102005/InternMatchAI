@@ -5,8 +5,7 @@ Recommendation model – AI-generated internship recommendations for a user.
 import uuid
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import ForeignKey, Numeric, String, Text, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey, Numeric, String, Text, Boolean, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -27,13 +26,13 @@ class Recommendation(Base, UUIDMixin, TimestampMixin):
 
     # ── FKs ───────────────────────────────────────────────────
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     internship_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("internships.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -43,9 +42,15 @@ class Recommendation(Base, UUIDMixin, TimestampMixin):
     match_score: Mapped[float] = mapped_column(
         Numeric(5, 4), nullable=False, comment="Overall match score 0-1"
     )
-    skill_match_score: Mapped[Optional[float]] = mapped_column(Numeric(5, 4), nullable=True)
-    semantic_score: Mapped[Optional[float]] = mapped_column(Numeric(5, 4), nullable=True)
-    eligibility_score: Mapped[Optional[float]] = mapped_column(Numeric(5, 4), nullable=True)
+    skill_match_score: Mapped[Optional[float]] = mapped_column(
+        Numeric(5, 4), nullable=True
+    )
+    semantic_score: Mapped[Optional[float]] = mapped_column(
+        Numeric(5, 4), nullable=True
+    )
+    eligibility_score: Mapped[Optional[float]] = mapped_column(
+        Numeric(5, 4), nullable=True
+    )
 
     # ── Rank ──────────────────────────────────────────────────
     rank: Mapped[Optional[int]] = mapped_column(nullable=True)

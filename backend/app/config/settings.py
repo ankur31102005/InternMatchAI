@@ -6,7 +6,7 @@ Uses pydantic-settings for environment variable loading with validation.
 from functools import lru_cache
 from typing import List
 
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,9 +25,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
 
     # ── Database ──────────────────────────────────────────────
-    DATABASE_URL: str = (
-        "postgresql+asyncpg://internmatch:internmatch_secret@localhost:5432/internmatch"
-    )
+    DATABASE_URL: str = "sqlite+aiosqlite:///./internmatch.db"
 
     # ── JWT ───────────────────────────────────────────────────
     SECRET_KEY: str = "change-me-in-production"

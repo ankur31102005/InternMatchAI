@@ -23,8 +23,11 @@ export async function apiFetch<T>(
     options.body = JSON.stringify(options.json)
   }
 
+  const fetchOptions: RequestInit = { ...options }
+  delete (fetchOptions as any).json
+
   const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
+    ...fetchOptions,
     headers,
   })
 

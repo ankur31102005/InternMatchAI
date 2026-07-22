@@ -9,13 +9,12 @@ from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
 # ── Engine ────────────────────────────────────────────────────
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-)
+engine_kwargs = {"echo": settings.DEBUG, "pool_pre_ping": True}
+if "sqlite" not in settings.DATABASE_URL:
+    engine_kwargs["pool_size"] = 10
+    engine_kwargs["max_overflow"] = 20
+
+engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
 
 # ── Session Factory ───────────────────────────────────────────
 AsyncSessionLocal = async_sessionmaker(
@@ -30,6 +29,7 @@ AsyncSessionLocal = async_sessionmaker(
 # ── Declarative Base ──────────────────────────────────────────
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy ORM models."""
+
     pass
 
 

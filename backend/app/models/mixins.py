@@ -3,10 +3,9 @@ Shared mixins for SQLAlchemy models.
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
-from sqlalchemy import DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime, func, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -14,7 +13,7 @@ class UUIDMixin:
     """Primary key as UUID."""
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         primary_key=True,
         default=uuid.uuid4,
         index=True,

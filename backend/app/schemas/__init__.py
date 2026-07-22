@@ -1,4 +1,5 @@
 """Schemas package init."""
+
 from app.schemas.user import (
     RegisterRequest,
     LoginRequest,

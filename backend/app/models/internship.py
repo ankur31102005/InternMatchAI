@@ -6,8 +6,7 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -35,7 +34,9 @@ class Internship(Base, UUIDMixin, TimestampMixin):
 
     # ── Duration & Compensation ───────────────────────────────
     duration_weeks: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    stipend_amount: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)
+    stipend_amount: Mapped[Optional[float]] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     stipend_currency: Mapped[str] = mapped_column(
         String(10), default="INR", nullable=False
     )
@@ -80,13 +81,13 @@ class InternshipSkill(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "internship_skills"
 
     internship_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("internships.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     skill_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("skills.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
