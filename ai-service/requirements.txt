@@ -4,16 +4,12 @@ uvicorn[standard]==0.32.1
 pydantic==2.10.4
 pydantic-settings==2.7.0
 
-# ── AI & Data Science ──────────────────────────────────────────
-numpy==1.26.4
-pandas==2.2.2
-scikit-learn==1.5.0
-lightgbm==4.3.0
-shap==0.45.1
-sentence-transformers==3.0.1
-torch==2.3.1 --extra-index-url https://download.pytorch.org/whl/cpu
-
 # ── Utilities ─────────────────────────────────────────────────
 python-dotenv==1.0.1
 httpx==0.28.1
 loguru==0.7.3
+
+# NOTE: Heavy ML libraries (torch, sentence-transformers, lightgbm,
+# shap, scikit-learn, numpy, pandas) were removed because the current
+# service code does not import or use them. Re-add them here if/when
+# the AI endpoints start using real ML models.
