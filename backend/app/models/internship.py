@@ -6,11 +6,14 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING, List, Optional
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
 from app.models.mixins import TimestampMixin, UUIDMixin
+
+EMBEDDING_DIM = 384
 
 if TYPE_CHECKING:
     from app.models.skill import Skill
@@ -59,6 +62,11 @@ class Internship(Base, UUIDMixin, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     total_seats: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     seats_filled: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # ── Semantic embedding (Phase 1) ──────────────────────────
+    embedding: Mapped[Optional[list]] = mapped_column(
+        Vector(EMBEDDING_DIM), nullable=True
+    )
 
     # ── Relationships ─────────────────────────────────────────
     internship_skills: Mapped[List["InternshipSkill"]] = relationship(

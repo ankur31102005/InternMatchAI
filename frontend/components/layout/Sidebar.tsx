@@ -10,11 +10,13 @@ import {
   User,
   UploadCloud,
   Shield,
+  Home,
 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { cn } from "@/lib/utils"
 
 const items = [
+  { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/internships", label: "Browse Internships", icon: Briefcase },
   { href: "/recommendations", label: "AI Matches", icon: Sparkles },

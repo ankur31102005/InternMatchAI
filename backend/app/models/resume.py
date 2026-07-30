@@ -5,11 +5,14 @@ Resume model and ResumeSkill association table.
 import uuid
 from typing import TYPE_CHECKING, List, Optional
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, Boolean, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
 from app.models.mixins import TimestampMixin, UUIDMixin
+
+EMBEDDING_DIM = 384
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -48,6 +51,11 @@ class Resume(Base, UUIDMixin, TimestampMixin):
     is_processed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     processing_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # ── Semantic embedding (Phase 1) ──────────────────────────
+    embedding: Mapped[Optional[list]] = mapped_column(
+        Vector(EMBEDDING_DIM), nullable=True
+    )
 
     # ── Relationships ─────────────────────────────────────────
     user: Mapped["User"] = relationship("User", back_populates="resumes")

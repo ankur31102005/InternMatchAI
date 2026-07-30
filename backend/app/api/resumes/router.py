@@ -222,6 +222,24 @@ async def process_resume_task(resume_id: uuid.UUID, file_path_str: str, ext: str
             resume.extracted_text = extracted_text
             resume.parsed_data = json.dumps({"skills": extracted_skills})
 
+            # Semantic embedding for matching (Phase 1) — best-effort.
+            try:
+                from app.services.embeddings import embed_one
+
+                skill_names = [
+                    s.get("name", "")
+                    for s in extracted_skills
+                    if isinstance(s, dict) and s.get("name")
+                ]
+                embed_input = extracted_text
+                if skill_names:
+                    embed_input = f"{extracted_text}\nSkills: {', '.join(skill_names)}"
+                vector = await embed_one(embed_input)
+                if vector:
+                    resume.embedding = vector
+            except Exception as emb_err:  # noqa: BLE001
+                logger.warning(f"Resume embedding failed: {emb_err}")
+
             # Process and link skills
             for skill_data in extracted_skills:
                 skill_name = skill_data["name"].strip()

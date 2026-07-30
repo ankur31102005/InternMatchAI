@@ -96,8 +96,20 @@ async def create_internship(
     current_admin: CurrentAdmin,
     db: AsyncSession = Depends(get_db),
 ) -> InternshipResponse:
-    """Create a new internship listing. Requires admin privileges."""
+    """Create a new internship listing. Requires admin privileges.
+
+    A semantic embedding is generated for the listing so it can be matched
+    against resumes via pgvector similarity (Phase 1).
+    """
     internship = Internship(**payload.model_dump())
+
+    # Generate a semantic embedding (best-effort; failure doesn't block create).
+    from app.services.embeddings import embed_one, internship_to_text
+
+    vector = await embed_one(internship_to_text(internship))
+    if vector:
+        internship.embedding = vector
+
     db.add(internship)
     await db.commit()
     await db.refresh(internship)

@@ -17,6 +17,7 @@ import {
   X,
   GraduationCap,
   Shield,
+  Home,
 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useTheme } from "@/lib/useTheme"
@@ -32,6 +33,7 @@ const publicLinks = [
 ]
 
 const authedLinks = [
+  { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/internships", label: "Internships", icon: Briefcase },
   { href: "/recommendations", label: "AI Matches", icon: Sparkles },

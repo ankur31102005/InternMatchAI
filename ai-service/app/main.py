@@ -7,6 +7,7 @@ Responsible for:
 """
 
 from contextlib import asynccontextmanager
+from functools import lru_cache
 import re
 from typing import List, Optional
 import uuid
@@ -14,6 +15,23 @@ import uuid
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from loguru import logger
+
+# ── Embedding model (lazy-loaded) ─────────────────────────────
+
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_DIM = 384
+
+
+@lru_cache(maxsize=1)
+def get_embedding_model():
+    """Load the sentence-transformer model once, on first use."""
+    from sentence_transformers import SentenceTransformer
+
+    logger.info(f"Loading embedding model '{EMBEDDING_MODEL_NAME}'...")
+    model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+    logger.info("Embedding model loaded.")
+    return model
+
 
 # ── Lifespan / Startup ────────────────────────────────────────
 
@@ -219,6 +237,39 @@ async def rank_internships(payload: RankRequest):
         )
 
     return {"results": results}
+
+
+# ── Embeddings ────────────────────────────────────────────────
+
+
+class EmbedRequest(BaseModel):
+    texts: List[str] = Field(..., description="Texts to embed")
+
+
+class EmbedResponse(BaseModel):
+    embeddings: List[List[float]]
+    dim: int
+
+
+@app.post("/embed", response_model=EmbedResponse)
+async def embed(payload: EmbedRequest):
+    """Return normalized sentence embeddings for the given texts.
+
+    Vectors are L2-normalized so cosine similarity equals the dot product.
+    """
+    if not payload.texts:
+        return EmbedResponse(embeddings=[], dim=EMBEDDING_DIM)
+
+    model = get_embedding_model()
+    vectors = model.encode(
+        payload.texts,
+        normalize_embeddings=True,
+        convert_to_numpy=True,
+    )
+    embeddings = [v.tolist() for v in vectors]
+    dim = len(embeddings[0]) if embeddings else EMBEDDING_DIM
+    logger.info(f"Embedded {len(embeddings)} text(s), dim={dim}.")
+    return EmbedResponse(embeddings=embeddings, dim=dim)
 
 
 @app.get("/health")

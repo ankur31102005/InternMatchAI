@@ -47,6 +47,25 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Database tables created successfully.")
+    else:
+        # Postgres: ensure pgvector + embedding columns exist (idempotent).
+        from sqlalchemy import text
+
+        async with engine.begin() as conn:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            await conn.execute(
+                text(
+                    "ALTER TABLE internships "
+                    "ADD COLUMN IF NOT EXISTS embedding vector(384)"
+                )
+            )
+            await conn.execute(
+                text(
+                    "ALTER TABLE resumes "
+                    "ADD COLUMN IF NOT EXISTS embedding vector(384)"
+                )
+            )
+        logger.info("✅ pgvector extension and embedding columns ensured.")
 
     yield
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")

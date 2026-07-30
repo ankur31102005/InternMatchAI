@@ -153,22 +153,61 @@ async def get_recommendations(
                 }
             )
 
-    # 7. Map & save recommendation records to DB
+    # 6.5 Semantic similarity (Phase 1): embed the resume if needed, then score
+    #      every internship by pgvector cosine similarity to the resume vector.
+    from app.services.embeddings import embed_one
+
+    if latest_resume.embedding is None and latest_resume.extracted_text:
+        resume_vec = await embed_one(latest_resume.extracted_text)
+        if resume_vec:
+            latest_resume.embedding = resume_vec
+            await db.commit()
+
+    semantic_scores: dict[str, float] = {}
+    if latest_resume.embedding is not None:
+        stmt_sem = select(
+            Internship.id,
+            (1 - Internship.embedding.cosine_distance(latest_resume.embedding)).label(
+                "similarity"
+            ),
+        ).where(
+            Internship.is_active.is_(True),
+            Internship.embedding.isnot(None),
+        )
+        res_sem = await db.execute(stmt_sem)
+        for iid, sim in res_sem.all():
+            semantic_scores[str(iid)] = max(0.0, float(sim)) if sim is not None else 0.0
+
+    # 7. Blend skill + semantic scores, then save recommendation records
     await db.execute(
         delete(Recommendation).where(Recommendation.user_id == current_user.id)
     )
 
-    sorted_results = sorted(rank_results, key=lambda x: x["match_score"], reverse=True)
+    # Weight: semantic understanding dominates, skill overlap refines it.
+    SEMANTIC_WEIGHT = 0.6
+    SKILL_WEIGHT = 0.4
+
+    scored = []
+    for res in rank_results:
+        intern_id_str = str(res["internship_id"])
+        skill_score = float(res["match_score"])
+        sem = semantic_scores.get(intern_id_str)
+        if sem is not None:
+            blended = round(SEMANTIC_WEIGHT * sem + SKILL_WEIGHT * skill_score, 4)
+        else:
+            blended = round(skill_score, 4)
+        scored.append((intern_id_str, blended, sem, skill_score, res))
+
+    scored.sort(key=lambda x: x[1], reverse=True)
     recommendations_to_add = []
 
-    for idx, res in enumerate(sorted_results):
-        intern_id_str = str(res["internship_id"])
-        match_score = res["match_score"]
+    for idx, (intern_id_str, blended, sem, skill_score, res) in enumerate(scored):
         explanation_dict = res.get("explanation", {})
-        if isinstance(explanation_dict, dict):
-            shap_vals = explanation_dict.get("shap_values", {})
-        else:
-            shap_vals = {}
+        shap_vals = (
+            explanation_dict.get("shap_values", {})
+            if isinstance(explanation_dict, dict)
+            else {}
+        )
 
         intern_obj = next((i for i in internships if str(i.id) == intern_id_str), None)
         if not intern_obj:
@@ -182,27 +221,35 @@ async def get_recommendations(
         matched_skills = [s for s in req_skill_names if s.lower() in user_skill_set]
         missing_skills = [s for s in req_skill_names if s.lower() not in user_skill_set]
 
-        # Ensure explanation text summary reflects actual matched skills
+        # Explanation reflects both semantic fit and skill overlap.
+        sem_pct = int(round((sem if sem is not None else skill_score) * 100))
         if matched_skills:
-            text_summary = f"Matched {len(matched_skills)} of {len(req_skill_names)} required skills ({', '.join(matched_skills)}). GPA criteria met."
+            text_summary = (
+                f"{sem_pct}% semantic fit with your resume. "
+                f"Matched {len(matched_skills)} of {len(req_skill_names)} listed "
+                f"skills ({', '.join(matched_skills)})."
+            )
         elif req_skill_names:
-            text_summary = f"0 of {len(req_skill_names)} required skills matched ({', '.join(req_skill_names)})."
+            text_summary = (
+                f"{sem_pct}% semantic fit with your resume, though none of the "
+                f"{len(req_skill_names)} listed skills are on your resume yet."
+            )
         else:
-            text_summary = "Eligibility criteria met for position."
+            text_summary = f"{sem_pct}% semantic fit with your resume."
 
         rec = Recommendation(
             user_id=current_user.id,
             internship_id=intern_obj.id,
-            match_score=match_score,
-            skill_match_score=match_score,
-            semantic_score=match_score,
+            match_score=blended,
+            skill_match_score=round(skill_score, 4),
+            semantic_score=round(sem, 4) if sem is not None else round(skill_score, 4),
             eligibility_score=1.0,
             rank=idx + 1,
             explanation=text_summary,
             matched_skills=json.dumps(matched_skills),
             missing_skills=json.dumps(missing_skills),
             shap_values=json.dumps(shap_vals),
-            model_version="v1.0.0-lightgbm",
+            model_version="v2.0.0-semantic",
             is_viewed=False,
             is_dismissed=False,
         )

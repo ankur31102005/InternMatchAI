@@ -9,7 +9,10 @@ python-dotenv==1.0.1
 httpx==0.28.1
 loguru==0.7.3
 
-# NOTE: Heavy ML libraries (torch, sentence-transformers, lightgbm,
-# shap, scikit-learn, numpy, pandas) were removed because the current
-# service code does not import or use them. Re-add them here if/when
-# the AI endpoints start using real ML models.
+# ── Embeddings (Phase 1: semantic matching) ───────────────────
+# CPU-only torch keeps the image smaller. sentence-transformers pulls in
+# transformers + huggingface; the all-MiniLM-L6-v2 model (~90MB) is
+# downloaded on first /embed call.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.3.1
+sentence-transformers==3.0.1
