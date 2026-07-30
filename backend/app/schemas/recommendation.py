@@ -64,6 +64,33 @@ class ApplicationListResponse(BaseModel):
     items: List[ApplicationResponse]
 
 
+# ── Admin: applicant management ───────────────────────────────
+
+
+class ApplicationStatusUpdate(BaseModel):
+    """Admin payload to move an application to a new stage."""
+
+    status: str = Field(
+        ..., description="pending|under_review|shortlisted|accepted|rejected"
+    )
+
+
+class AdminApplicationItem(BaseModel):
+    id: uuid.UUID
+    status: str
+    cover_letter: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    applicant_name: str
+    applicant_email: str
+    internship: Optional[InternshipResponse] = None
+
+
+class AdminApplicationListResponse(BaseModel):
+    total: int
+    items: List[AdminApplicationItem]
+
+
 # ── Common Schemas ────────────────────────────────────────────
 
 

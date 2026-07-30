@@ -98,6 +98,22 @@ export interface ApplicationListResponse {
   items: Application[]
 }
 
+export interface AdminApplication {
+  id: string
+  status: string
+  cover_letter?: string | null
+  created_at: string
+  updated_at: string
+  applicant_name: string
+  applicant_email: string
+  internship?: Internship | null
+}
+
+export interface AdminApplicationListResponse {
+  total: number
+  items: AdminApplication[]
+}
+
 export interface Skill {
   id: string
   name: string

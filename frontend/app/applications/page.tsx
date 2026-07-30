@@ -42,13 +42,16 @@ export default function ApplicationsPage() {
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: items.length }
-    items.forEach((a) => (c[a.status] = (c[a.status] ?? 0) + 1))
+    items.forEach((a) => {
+      const k = a.status.toLowerCase()
+      c[k] = (c[k] ?? 0) + 1
+    })
     return c
   }, [items])
 
   const filtered = useMemo(() => {
     return items.filter((a) => {
-      const matchesFilter = filter === "all" || a.status === filter
+      const matchesFilter = filter === "all" || a.status.toLowerCase() === filter
       const q = search.trim().toLowerCase()
       const matchesSearch =
         !q ||
@@ -148,7 +151,7 @@ export default function ApplicationsPage() {
         <div className="space-y-4">
           {filtered.map((app, idx) => {
             const canWithdraw = !["withdrawn", "rejected", "accepted"].includes(
-              app.status
+              app.status.toLowerCase()
             )
             return (
               <motion.div

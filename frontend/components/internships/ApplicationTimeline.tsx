@@ -17,9 +17,10 @@ const ORDER: Record<string, number> = {
 }
 
 export function ApplicationTimeline({ status }: { status: string }) {
-  const rejected = status === "rejected"
-  const withdrawn = status === "withdrawn"
-  const current = ORDER[status] ?? 0
+  const s = String(status).toLowerCase()
+  const rejected = s === "rejected"
+  const withdrawn = s === "withdrawn"
+  const current = ORDER[s] ?? 0
 
   if (withdrawn) {
     return (

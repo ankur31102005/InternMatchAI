@@ -11,6 +11,7 @@ const map: Record<string, { label: string; variant: BadgeProps["variant"] }> = {
 }
 
 export function StatusBadge({ status }: { status: ApplicationStatus | string }) {
-  const cfg = map[status] ?? { label: status, variant: "neutral" as const }
+  const key = String(status).toLowerCase()
+  const cfg = map[key] ?? { label: status, variant: "neutral" as const }
   return <Badge variant={cfg.variant}>{cfg.label}</Badge>
 }
