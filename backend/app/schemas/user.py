@@ -44,6 +44,12 @@ class TokenResponse(BaseModel):
     expires_in: int = Field(..., description="Seconds until expiry")
 
 
+class GoogleAuthRequest(BaseModel):
+    """Payload for POST /auth/google – the Google ID-token credential."""
+
+    credential: str = Field(..., description="Google Identity Services ID token")
+
+
 # ── User Schemas ──────────────────────────────────────────────
 
 
@@ -60,6 +66,13 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
+
+
+class UserRoleUpdate(BaseModel):
+    """Admin-only payload for changing a user's role/status."""
+
+    is_admin: Optional[bool] = None
+    is_active: Optional[bool] = None
 
 
 class UserResponse(UserBase):

@@ -7,6 +7,26 @@ interface FetchOptions extends RequestInit {
   json?: any
 }
 
+/**
+ * Turn a FastAPI error body into a readable string. FastAPI returns 422
+ * validation errors as `detail: [{ loc, msg, ... }]`, so we flatten those
+ * into "field: message" pairs instead of rendering "[object Object]".
+ */
+function extractErrorMessage(errBody: any, fallback: string): string {
+  const detail = errBody?.detail ?? errBody?.error
+  if (typeof detail === "string") return detail
+  if (Array.isArray(detail)) {
+    const msgs = detail.map((e) => {
+      const loc = Array.isArray(e?.loc) ? e.loc[e.loc.length - 1] : ""
+      const field = loc && loc !== "body" ? `${loc}: ` : ""
+      return `${field}${e?.msg ?? "invalid value"}`
+    })
+    return msgs.filter(Boolean).join("; ") || fallback
+  }
+  if (detail && typeof detail === "object") return detail.msg || fallback
+  return fallback
+}
+
 export async function apiFetch<T>(
   path: string,
   options: FetchOptions = {}
@@ -35,7 +55,7 @@ export async function apiFetch<T>(
     let errorDetail = "An error occurred"
     try {
       const errBody = await response.json()
-      errorDetail = errBody.detail || errBody.error || errorDetail
+      errorDetail = extractErrorMessage(errBody, errorDetail)
     } catch {
       // ignore
     }
@@ -71,7 +91,7 @@ export async function apiUpload<T>(
     let errorDetail = "Upload failed"
     try {
       const errBody = await response.json()
-      errorDetail = errBody.detail || errBody.error || errorDetail
+      errorDetail = extractErrorMessage(errBody, errorDetail)
     } catch {
       // ignore
     }

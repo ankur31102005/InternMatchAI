@@ -315,8 +315,15 @@ export function BulkUpload() {
               {results.filter((r) => !r.ok).length} failed
             </Badge>
           </div>
+          {results.some((r) => !r.ok) && (
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Failed rows are listed first — fix these in your sheet and re-import.
+            </p>
+          )}
           <div className="max-h-72 space-y-1.5 overflow-auto">
-            {results.map((r) => (
+            {[...results]
+              .sort((a, b) => Number(a.ok) - Number(b.ok))
+              .map((r) => (
               <motion.div
                 key={r.row}
                 initial={{ opacity: 0, x: -8 }}
@@ -328,10 +335,12 @@ export function BulkUpload() {
                 ) : (
                   <XCircle className="h-4 w-4 shrink-0 text-destructive" />
                 )}
-                <span className="text-muted-foreground">Row {r.row}:</span>
-                <span className="truncate font-medium text-foreground">{r.title}</span>
+                <span className="shrink-0 text-muted-foreground">Row {r.row}:</span>
+                <span className="shrink-0 truncate font-medium text-foreground">
+                  {r.title}
+                </span>
                 {!r.ok && r.error && (
-                  <span className="ml-auto truncate text-xs text-destructive">
+                  <span className="ml-auto pl-2 text-right text-xs text-destructive">
                     {r.error}
                   </span>
                 )}

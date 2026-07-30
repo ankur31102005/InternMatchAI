@@ -9,7 +9,7 @@ import * as z from "zod"
 import { Mail, User, Phone, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react"
 import { apiFetch } from "@/services/api"
 import { AuthLayout } from "@/components/layout/AuthLayout"
-import { SocialButtons } from "@/components/auth/SocialButtons"
+import { GoogleButton } from "@/components/auth/GoogleButton"
 import { PasswordInput } from "@/components/auth/PasswordInput"
 import { Input, Label, FieldError } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
@@ -167,7 +167,7 @@ export default function RegisterPage() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <SocialButtons />
+      <GoogleButton />
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Already have an account?{" "}

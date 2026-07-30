@@ -22,11 +22,21 @@ interface FilterPanelProps {
   filters: Filters
   onChange: (next: Filters) => void
   onReset: () => void
+  /** Sectors actually present in the data. When provided, replaces the
+   *  static list so users only see sectors that yield results. */
+  sectors?: string[]
 }
 
-export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
+export function FilterPanel({
+  filters,
+  onChange,
+  onReset,
+  sectors,
+}: FilterPanelProps) {
   const set = (key: keyof Filters, value: string) =>
     onChange({ ...filters, [key]: value })
+
+  const sectorList = sectors ?? [...SECTORS]
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
@@ -53,7 +63,7 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
             onChange={(e) => set("sector", e.target.value)}
             options={[
               { label: "All sectors", value: "" },
-              ...SECTORS.map((s) => ({ label: s, value: s })),
+              ...sectorList.map((s) => ({ label: s, value: s })),
             ]}
           />
         </div>

@@ -85,6 +85,8 @@ services:
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      # Poll the filesystem so code changes hot-reload on Windows/OneDrive mounts
+      WATCHPACK_POLLING: "true"
     volumes:
       - ./frontend:/app
       - /app/node_modules

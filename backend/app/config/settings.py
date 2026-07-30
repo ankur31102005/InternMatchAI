@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # ── AI Service ────────────────────────────────────────────
     AI_SERVICE_URL: str = "http://localhost:8001"
 
+    # ── Google OAuth ──────────────────────────────────────────
+    GOOGLE_CLIENT_ID: str = ""
+
     # ── Rate Limiting ─────────────────────────────────────────
     RATE_LIMIT_PER_MINUTE: int = 60
 

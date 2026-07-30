@@ -7,6 +7,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   ListChecks,
+  Users,
 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { DashboardShell } from "@/components/layout/DashboardShell"
@@ -17,11 +18,13 @@ import { Button } from "@/components/ui/Button"
 import { BulkUpload } from "@/components/admin/BulkUpload"
 import { ManualInternshipForm } from "@/components/admin/ManualInternshipForm"
 import { ManageInternships } from "@/components/admin/ManageInternships"
+import { ManageUsers } from "@/components/admin/ManageUsers"
 
 const TABS = [
   { key: "bulk", label: "Bulk Import (Excel)", icon: FileSpreadsheet },
   { key: "manual", label: "Add Manually", icon: PlusCircle },
   { key: "manage", label: "Manage / Delete", icon: ListChecks },
+  { key: "users", label: "Users", icon: Users },
 ]
 
 export default function AdminPage() {
@@ -68,6 +71,7 @@ export default function AdminPage() {
             {tab === "bulk" && <BulkUpload />}
             {tab === "manual" && <ManualInternshipForm />}
             {tab === "manage" && <ManageInternships />}
+            {tab === "users" && <ManageUsers />}
           </div>
         </>
       )}

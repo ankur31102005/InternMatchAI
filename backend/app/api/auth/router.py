@@ -2,27 +2,42 @@
 Auth API routes – register, login, get current user.
 """
 
+import secrets
+
+import httpx
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.core.dependencies import CurrentUser
 from app.core.exceptions import (
     UserAlreadyExistsError,
     InvalidCredentialsError,
     http_401,
     http_409,
+    http_400,
 )
 from app.database import get_db
+from app.models.user import User
 from app.schemas.user import (
+    GoogleAuthRequest,
     LoginRequest,
     RegisterRequest,
     TokenResponse,
     UserResponse,
 )
 from app.services.auth_service import AuthService
-from app.services.security import get_token_expiry_seconds
+from app.services.security import (
+    create_access_token,
+    get_token_expiry_seconds,
+    hash_password,
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo"
+GOOGLE_ISSUERS = {"accounts.google.com", "https://accounts.google.com"}
 
 
 @router.post(
@@ -76,6 +91,72 @@ async def login(
         access_token=token,
         expires_in=get_token_expiry_seconds(),
     )
+
+
+@router.post(
+    "/google",
+    response_model=TokenResponse,
+    summary="Login or sign up with a Google account",
+)
+async def google_auth(
+    payload: GoogleAuthRequest,
+    db: AsyncSession = Depends(get_db),
+) -> TokenResponse:
+    """Verify a Google ID token, find-or-create the user, and issue our JWT.
+
+    The frontend obtains the ID token via Google Identity Services and posts it
+    here. We validate it against Google's tokeninfo endpoint and check that the
+    audience matches our configured client ID.
+    """
+    if not settings.GOOGLE_CLIENT_ID:
+        raise http_400("Google sign-in is not configured on the server.")
+
+    # 1. Verify the token with Google
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(
+                GOOGLE_TOKENINFO_URL, params={"id_token": payload.credential}
+            )
+    except httpx.HTTPError:
+        raise http_401("Could not reach Google to verify the token.")
+
+    if resp.status_code != 200:
+        raise http_401("Invalid Google credential.")
+
+    info = resp.json()
+
+    # 2. Validate audience, issuer and verified email
+    if info.get("aud") != settings.GOOGLE_CLIENT_ID:
+        raise http_401("Google token was issued for a different app.")
+    if info.get("iss") not in GOOGLE_ISSUERS:
+        raise http_401("Invalid Google token issuer.")
+    email = (info.get("email") or "").lower()
+    email_verified = str(info.get("email_verified", "")).lower() == "true"
+    if not email or not email_verified:
+        raise http_401("Google account email is not verified.")
+
+    full_name = info.get("name") or email.split("@")[0]
+
+    # 3. Find or create the user
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if user is None:
+        user = User(
+            email=email,
+            full_name=full_name,
+            hashed_password=hash_password(secrets.token_urlsafe(32)),
+            is_verified=True,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    if not user.is_active:
+        raise http_401("Account is deactivated.")
+
+    # 4. Issue our own access token
+    token = create_access_token(str(user.id))
+    return TokenResponse(access_token=token, expires_in=get_token_expiry_seconds())
 
 
 @router.get(

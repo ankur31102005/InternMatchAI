@@ -10,15 +10,16 @@ import {
 import { PageShell } from "@/components/layout/PageShell"
 import { HeroSearch } from "@/components/home/HeroSearch"
 import { FeaturedInternships } from "@/components/home/FeaturedInternships"
+import { CompanyMarquee } from "@/components/home/CompanyMarquee"
 import { Reveal, SectionHeading } from "@/components/ui/Reveal"
 import { Accordion } from "@/components/ui/Accordion"
 import { Button } from "@/components/ui/Button"
 import { Avatar } from "@/components/ui/Avatar"
+import { CountUp } from "@/components/ui/CountUp"
 import {
   CATEGORIES,
   STATS,
   HOW_IT_WORKS,
-  TOP_COMPANIES,
   TESTIMONIALS,
   FAQS,
 } from "@/lib/constants"
@@ -30,6 +31,11 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="grid-backdrop absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_60%,transparent_100%)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 left-1/4 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-blue/10 blur-3xl" />
+          <div className="absolute top-8 right-1/4 h-72 w-72 translate-x-1/2 rounded-full bg-brand-saffron/10 blur-3xl" />
+          <div className="absolute -bottom-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-green/10 blur-3xl" />
+        </div>
         <div className="container-page relative py-20 text-center sm:py-28">
           <Reveal>
             <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-primary">
@@ -88,9 +94,10 @@ export default function HomePage() {
           {STATS.map((stat, i) => (
             <Reveal key={stat.label} delay={i * 0.05}>
               <div className="text-center">
-                <p className="font-heading text-3xl font-extrabold text-primary sm:text-4xl">
-                  {stat.value}
-                </p>
+                <CountUp
+                  value={stat.value}
+                  className="block font-heading text-3xl font-extrabold text-primary sm:text-4xl"
+                />
                 <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
               </div>
             </Reveal>
@@ -192,17 +199,8 @@ export default function HomePage() {
               description="Ministries, PSUs and public-sector leaders offering internships on the platform."
             />
           </Reveal>
-          <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {TOP_COMPANIES.map((company, i) => (
-              <Reveal key={company} delay={(i % 4) * 0.04}>
-                <div className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-soft">
-                  <Avatar name={company} size={38} color={companyAccent(company)} />
-                  <span className="text-sm font-medium leading-tight text-foreground">
-                    {company}
-                  </span>
-                </div>
-              </Reveal>
-            ))}
+          <div className="mt-12">
+            <CompanyMarquee />
           </div>
         </div>
       </section>

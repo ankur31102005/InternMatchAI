@@ -78,6 +78,20 @@ function InternshipsBrowser() {
     },
   })
 
+  // Distinct sectors actually present in the data, to drive the filter dropdown
+  // (avoids offering sectors that would return zero results).
+  const { data: facetData } = useQuery<InternshipListResponse>({
+    queryKey: ["internship-facets"],
+    queryFn: () => apiFetch<InternshipListResponse>("/internships/?per_page=100"),
+  })
+  const sectorOptions = useMemo(() => {
+    const set = new Set<string>()
+    facetData?.items.forEach((i) => {
+      if (i.sector) set.add(i.sector)
+    })
+    return [...set].sort()
+  }, [facetData])
+
   const filtered = useMemo(() => {
     let items = data?.items ?? []
     if (location.trim()) {
@@ -121,7 +135,12 @@ function InternshipsBrowser() {
   }
 
   const filterPanel = (
-    <FilterPanel filters={filters} onChange={setFilters} onReset={reset} />
+    <FilterPanel
+      filters={filters}
+      onChange={setFilters}
+      onReset={reset}
+      sectors={sectorOptions}
+    />
   )
 
   return (

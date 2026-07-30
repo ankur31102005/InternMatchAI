@@ -58,9 +58,13 @@ function toDateStr(value: unknown): string | undefined {
   // Excel may hand us a Date object, a serial number, or a string.
   if (value instanceof Date) return value.toISOString().slice(0, 10)
   const s = String(value).trim()
+  // Only accept values that look like a real date (YYYY-MM-DD, DD/MM/YYYY, etc.).
+  // Free text like "6 months" or "Immediate" is dropped so the backend never
+  // sees an invalid date (which would 422 the whole row).
+  if (!/\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}/.test(s)) return undefined
   const d = new Date(s)
   if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10)
-  return s // let the backend validate / reject
+  return undefined
 }
 
 /**

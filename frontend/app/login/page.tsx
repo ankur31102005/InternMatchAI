@@ -10,7 +10,7 @@ import { Mail, ArrowRight, AlertCircle } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { apiFetch } from "@/services/api"
 import { AuthLayout } from "@/components/layout/AuthLayout"
-import { SocialButtons } from "@/components/auth/SocialButtons"
+import { GoogleButton } from "@/components/auth/GoogleButton"
 import { PasswordInput } from "@/components/auth/PasswordInput"
 import { Input, Label, FieldError } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
@@ -130,7 +130,7 @@ export default function LoginPage() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <SocialButtons />
+      <GoogleButton />
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
