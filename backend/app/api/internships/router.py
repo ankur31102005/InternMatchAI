@@ -127,3 +127,27 @@ async def update_internship(
     await db.commit()
     await db.refresh(internship)
     return InternshipResponse.model_validate(internship)
+
+
+@router.delete(
+    "/{internship_id}",
+    status_code=204,
+    summary="Delete an internship (admin only)",
+)
+async def delete_internship(
+    internship_id: uuid.UUID,
+    current_admin: CurrentAdmin,
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Permanently delete an internship. Requires admin privileges.
+
+    Related skills, applications and recommendations are removed automatically
+    via ON DELETE CASCADE foreign keys.
+    """
+    result = await db.execute(select(Internship).where(Internship.id == internship_id))
+    internship = result.scalar_one_or_none()
+    if not internship:
+        raise http_404(f"Internship {internship_id} not found.")
+
+    await db.delete(internship)
+    await db.commit()

@@ -9,7 +9,9 @@ import {
   FileText,
   User,
   UploadCloud,
+  Shield,
 } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
 import { cn } from "@/lib/utils"
 
 const items = [
@@ -23,11 +25,15 @@ const items = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuthStore()
+  const navItems = user?.is_admin
+    ? [...items, { href: "/admin", label: "Admin Panel", icon: Shield }]
+    : items
 
   return (
     <aside className="hidden w-60 shrink-0 lg:block">
       <nav className="sticky top-24 space-y-1">
-        {items.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href
           return (
             <Link

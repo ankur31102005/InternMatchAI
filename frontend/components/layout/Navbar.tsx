@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   GraduationCap,
+  Shield,
 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useTheme } from "@/lib/useTheme"
@@ -50,7 +51,11 @@ export function Navbar() {
     router.push("/login")
   }
 
-  const links = isAuthenticated ? authedLinks : publicLinks
+  const links = isAuthenticated
+    ? user?.is_admin
+      ? [...authedLinks, { href: "/admin", label: "Admin", icon: Shield }]
+      : authedLinks
+    : publicLinks
 
   return (
     <header className="sticky top-0 z-40 w-full">
