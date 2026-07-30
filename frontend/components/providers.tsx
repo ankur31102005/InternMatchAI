@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useAuthStore } from "@/store/authStore"
 import { apiFetch } from "@/services/api"
 import { Toaster } from "@/components/ui/Toaster"
+import { ChatWidget } from "@/components/chat/ChatWidget"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -47,6 +48,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
+      <ChatWidget />
       <Toaster />
     </QueryClientProvider>
   )

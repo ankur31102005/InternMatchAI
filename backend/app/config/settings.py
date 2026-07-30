@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     # ── Google OAuth ──────────────────────────────────────────
     GOOGLE_CLIENT_ID: str = ""
 
+    # ── AI Career Assistant (Phase 3) — free Google Gemini ────
+    GEMINI_API_KEY: str = ""
+    # Free-tier Gemini model. gemini-2.0-flash = fast + free.
+    # (gemini-2.5-flash also works on the free tier.)
+    CHAT_MODEL: str = "gemini-2.0-flash"
+
     # ── Rate Limiting ─────────────────────────────────────────
     RATE_LIMIT_PER_MINUTE: int = 60
 

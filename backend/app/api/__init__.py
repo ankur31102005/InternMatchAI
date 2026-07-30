@@ -6,6 +6,7 @@ from app.api.resumes.router import router as resumes_router
 from app.api.internships.router import router as internships_router
 from app.api.recommendations.router import router as recommendations_router
 from app.api.applications.router import router as applications_router
+from app.api.chat.router import router as chat_router
 
 __all__ = [
     "auth_router",
@@ -14,4 +15,5 @@ __all__ = [
     "internships_router",
     "recommendations_router",
     "applications_router",
+    "chat_router",
 ]
