@@ -24,6 +24,7 @@ import { Avatar } from "@/components/ui/Avatar"
 import { Button } from "@/components/ui/Button"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { CardSkeleton } from "@/components/ui/Skeleton"
+import { MatchBreakdown } from "@/components/internships/MatchBreakdown"
 import {
   matchPercent,
   parseSkillList,
@@ -247,6 +248,13 @@ export default function RecommendationsPage() {
                         </p>
                       </div>
                     )}
+
+                    <MatchBreakdown
+                      semantic={rec.semantic_score}
+                      skill={rec.skill_match_score}
+                      eligibility={rec.eligibility_score}
+                      className="mb-4"
+                    />
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {matched.length > 0 && (

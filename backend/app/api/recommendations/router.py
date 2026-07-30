@@ -183,25 +183,39 @@ async def get_recommendations(
         delete(Recommendation).where(Recommendation.user_id == current_user.id)
     )
 
-    # Weight: semantic understanding dominates, skill overlap refines it.
-    SEMANTIC_WEIGHT = 0.6
-    SKILL_WEIGHT = 0.4
+    # XAI blend (Phase 2): three transparent signals feed the final score —
+    # semantic meaning, skill overlap, and eligibility (GPA vs the role's min).
+    SEMANTIC_WEIGHT = 0.55
+    SKILL_WEIGHT = 0.30
+    ELIG_WEIGHT = 0.15
+
+    intern_by_id = {str(i.id): i for i in internships}
+
+    def eligibility_for(intern_obj) -> float:
+        if intern_obj is None or intern_obj.min_gpa is None:
+            return 1.0
+        min_gpa = float(intern_obj.min_gpa)
+        if min_gpa <= 0 or gpa_val >= min_gpa:
+            return 1.0
+        return max(0.3, round(gpa_val / min_gpa, 4))
 
     scored = []
     for res in rank_results:
         intern_id_str = str(res["internship_id"])
         skill_score = float(res["match_score"])
         sem = semantic_scores.get(intern_id_str)
-        if sem is not None:
-            blended = round(SEMANTIC_WEIGHT * sem + SKILL_WEIGHT * skill_score, 4)
-        else:
-            blended = round(skill_score, 4)
-        scored.append((intern_id_str, blended, sem, skill_score, res))
+        sem_eff = sem if sem is not None else skill_score
+        elig = eligibility_for(intern_by_id.get(intern_id_str))
+        blended = round(
+            SEMANTIC_WEIGHT * sem_eff + SKILL_WEIGHT * skill_score + ELIG_WEIGHT * elig,
+            4,
+        )
+        scored.append((intern_id_str, blended, sem, skill_score, elig, res))
 
     scored.sort(key=lambda x: x[1], reverse=True)
     recommendations_to_add = []
 
-    for idx, (intern_id_str, blended, sem, skill_score, res) in enumerate(scored):
+    for idx, (intern_id_str, blended, sem, skill_score, elig, res) in enumerate(scored):
         explanation_dict = res.get("explanation", {})
         shap_vals = (
             explanation_dict.get("shap_values", {})
@@ -243,7 +257,7 @@ async def get_recommendations(
             match_score=blended,
             skill_match_score=round(skill_score, 4),
             semantic_score=round(sem, 4) if sem is not None else round(skill_score, 4),
-            eligibility_score=1.0,
+            eligibility_score=round(elig, 4),
             rank=idx + 1,
             explanation=text_summary,
             matched_skills=json.dumps(matched_skills),

@@ -34,6 +34,7 @@ import { Avatar } from "@/components/ui/Avatar"
 import { Button } from "@/components/ui/Button"
 import { ProgressRing } from "@/components/ui/ProgressRing"
 import { InternshipCard } from "@/components/internships/InternshipCard"
+import { MatchBreakdown } from "@/components/internships/MatchBreakdown"
 import { FullPageSpinner } from "@/components/ui/Spinner"
 import { EmptyState } from "@/components/ui/EmptyState"
 import {
@@ -382,6 +383,12 @@ export default function InternshipDetailPage() {
                     <div className="my-4 flex justify-center">
                       <ProgressRing value={matchPercent(rec.match_score)} />
                     </div>
+                    <MatchBreakdown
+                      semantic={rec.semantic_score}
+                      skill={rec.skill_match_score}
+                      eligibility={rec.eligibility_score}
+                      className="mb-4 text-left"
+                    />
                     {matched.length > 0 && (
                       <div className="mb-3 text-left">
                         <p className="mb-1.5 text-xs font-semibold text-success">
