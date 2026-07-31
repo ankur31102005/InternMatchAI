@@ -6,7 +6,7 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, ForeignKey, Integer, String, Text, Uuid
+from sqlalchemy import JSON, Date, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -50,6 +50,18 @@ class StudentProfile(Base, UUIDMixin, TimestampMixin):
     linkedin_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     github_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     portfolio_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # ── Structured extras (JSON lists of objects) ─────────────
+    # education:   [{institution, degree, year}]
+    # experience:  [{role, org, period}]
+    # certificates:[{name, issuer}]
+    education: Mapped[Optional[list]] = mapped_column(JSON, default=list, nullable=True)
+    experience: Mapped[Optional[list]] = mapped_column(
+        JSON, default=list, nullable=True
+    )
+    certificates: Mapped[Optional[list]] = mapped_column(
+        JSON, default=list, nullable=True
+    )
 
     # ── PM Scheme Eligibility ─────────────────────────────────
     is_eligible_for_pm_scheme: Mapped[bool] = mapped_column(

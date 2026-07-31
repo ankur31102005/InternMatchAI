@@ -115,6 +115,7 @@ async def list_all_applications(
             cover_letter=a.cover_letter,
             created_at=a.created_at,
             updated_at=a.updated_at,
+            applicant_id=a.user_id,
             applicant_name=a.user.full_name if a.user else "Unknown",
             applicant_email=a.user.email if a.user else "",
             internship=(

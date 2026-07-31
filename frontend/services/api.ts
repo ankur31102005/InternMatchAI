@@ -70,6 +70,34 @@ export async function apiFetch<T>(
 }
 
 /**
+ * Fetch a protected file (with the auth header) and open it in a new tab.
+ * Used for viewing resumes — a plain <a href> can't send the JWT, so we pull
+ * the bytes as a blob and hand the browser an object URL to render inline.
+ */
+export async function apiOpenFile(path: string): Promise<void> {
+  const token = useAuthStore.getState().token
+  const headers = new Headers()
+  if (token) headers.set("Authorization", `Bearer ${token}`)
+
+  const response = await fetch(`${BASE_URL}${path}`, { headers })
+  if (!response.ok) {
+    let errorDetail = "Could not open the file"
+    try {
+      const errBody = await response.json()
+      errorDetail = extractErrorMessage(errBody, errorDetail)
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  window.open(url, "_blank", "noopener,noreferrer")
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
+/**
  * Multipart upload helper. Kept separate from apiFetch because FormData must
  * not have its Content-Type set manually (the browser sets the boundary).
  */

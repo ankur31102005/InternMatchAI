@@ -40,6 +40,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env.example
+      - path: ./backend/.env
+        required: false
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-internmatch}:${POSTGRES_PASSWORD:-internmatch_secret}@db:5432/${POSTGRES_DB:-internmatch}
       AI_SERVICE_URL: http://ai-service:8001

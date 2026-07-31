@@ -1,10 +1,10 @@
 import Link from "next/link"
 import {
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   BrainCircuit,
-  Target,
+  Landmark,
+  BadgeCheck,
   Star,
 } from "lucide-react"
 import { PageShell } from "@/components/layout/PageShell"
@@ -30,18 +30,27 @@ export default function HomePage() {
     <PageShell>
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-border">
-        <div className="grid-backdrop absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_60%,transparent_100%)]" />
+        {/* Official tricolor top edge — national-portal cue */}
+        <div className="tricolor-bar h-1 w-full" />
+        <div className="grid-backdrop absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_55%,transparent_100%)]" />
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-20 left-1/4 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-blue/10 blur-3xl" />
-          <div className="absolute top-8 right-1/4 h-72 w-72 translate-x-1/2 rounded-full bg-brand-saffron/10 blur-3xl" />
-          <div className="absolute -bottom-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-green/10 blur-3xl" />
+          <div className="absolute -top-24 left-1/2 h-80 w-[38rem] -translate-x-1/2 rounded-full bg-brand-blue/[0.06] blur-3xl" />
         </div>
-        <div className="container-page relative py-20 text-center sm:py-28">
+        <div className="container-page relative py-16 text-center sm:py-24">
+          {/* Institutional trust ribbon */}
           <Reveal>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-xs font-medium text-primary">
-              <Sparkles className="h-3.5 w-3.5" />
-              AI-powered matching for PM Internship Scheme &amp; PSU roles
-            </span>
+            <div className="mx-auto mb-7 flex w-fit items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-1.5 shadow-card">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                <Landmark className="h-3.5 w-3.5 text-primary" />
+              </span>
+              <span className="text-xs font-medium text-foreground">
+                Government, PSU &amp; PM Internship Scheme opportunities
+              </span>
+              <span className="hidden h-3.5 w-px bg-border sm:block" />
+              <span className="hidden items-center gap-1 text-xs font-semibold text-success sm:flex">
+                <BadgeCheck className="h-3.5 w-3.5" /> Free for students
+              </span>
+            </div>
           </Reveal>
           <Reveal delay={0.05}>
             <h1 className="mx-auto max-w-4xl text-balance font-heading text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl">
@@ -51,9 +60,9 @@ export default function HomePage() {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground">
-              Upload your resume once. Our AI extracts your skills, verifies
-              eligibility and ranks government &amp; public-sector internships by a
-              transparent compatibility score.
+              Upload your resume once. We extract your skills, verify eligibility
+              and rank government &amp; public-sector internships by a transparent
+              compatibility score — so you apply where you truly fit.
             </p>
           </Reveal>
           <Reveal delay={0.15}>
@@ -61,7 +70,24 @@ export default function HomePage() {
               <HeroSearch />
             </div>
           </Reveal>
-          <Reveal delay={0.2}>
+          {/* Popular searches — real-portal quick access */}
+          <Reveal delay={0.18}>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+              <span className="text-muted-foreground">Popular:</span>
+              {["Data Analyst", "Policy Research", "Software", "Finance"].map(
+                (term) => (
+                  <Link
+                    key={term}
+                    href={`/internships?search=${encodeURIComponent(term)}`}
+                    className="rounded-full border border-border bg-card px-3 py-1 font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  >
+                    {term}
+                  </Link>
+                )
+              )}
+            </div>
+          </Reveal>
+          <Reveal delay={0.22}>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button href="/register" variant="primary" size="lg">
                 Get started free
@@ -72,16 +98,16 @@ export default function HomePage() {
               </Button>
             </div>
           </Reveal>
-          <Reveal delay={0.25}>
+          <Reveal delay={0.28}>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-success" /> Eligibility verified
+                <ShieldCheck className="h-4 w-4 text-success" /> Eligibility auto-verified
               </span>
               <span className="flex items-center gap-2">
-                <BrainCircuit className="h-4 w-4 text-primary" /> Explainable AI scores
+                <Landmark className="h-4 w-4 text-brand-saffron-dark" /> Ministry, PSU &amp; DPSU roles
               </span>
               <span className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-brand-saffron-dark" /> Skill-gap insights
+                <BrainCircuit className="h-4 w-4 text-primary" /> Transparent match scores
               </span>
             </div>
           </Reveal>

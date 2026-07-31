@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { Search, Building2, ClipboardList, Loader2 } from "lucide-react"
-import type { AdminApplicationListResponse } from "@/types"
-import { apiFetch } from "@/services/api"
+import { Search, Building2, ClipboardList, Loader2, FileText } from "lucide-react"
+import type { AdminApplicationListResponse, Resume } from "@/types"
+import { apiFetch, apiOpenFile } from "@/services/api"
+import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
 import { Avatar } from "@/components/ui/Avatar"
 import { Select } from "@/components/ui/Select"
@@ -37,6 +38,7 @@ export function ManageApplicants() {
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [viewingId, setViewingId] = useState<string | null>(null)
 
   const { data, isLoading, isError } = useQuery<AdminApplicationListResponse>({
     queryKey: ["admin-applications"],
@@ -67,6 +69,21 @@ export function ManageApplicants() {
       return matchesFilter && matchesSearch
     })
   }, [items, filter, search])
+
+  const viewResume = async (applicantId: string) => {
+    setViewingId(applicantId)
+    try {
+      const resume = await apiFetch<Resume>(`/resumes/by-user/${applicantId}`)
+      await apiOpenFile(`/resumes/${resume.id}/file`)
+    } catch (err: any) {
+      toast.error(
+        "No resume",
+        err.message || "This applicant hasn't uploaded a resume."
+      )
+    } finally {
+      setViewingId(null)
+    }
+  }
 
   const changeStatus = async (id: string, status: string) => {
     setUpdatingId(id)
@@ -172,6 +189,15 @@ export function ManageApplicants() {
                 </div>
 
                 <div className="flex items-center gap-3 sm:shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => viewResume(a.applicant_id)}
+                    loading={viewingId === a.applicant_id}
+                  >
+                    {viewingId !== a.applicant_id && <FileText className="h-4 w-4" />}
+                    Resume
+                  </Button>
                   <StatusBadge status={a.status} />
                   <div className="w-40">
                     {updatingId === a.id ? (

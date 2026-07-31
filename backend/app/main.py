@@ -66,7 +66,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
                     "ADD COLUMN IF NOT EXISTS embedding vector(384)"
                 )
             )
-        logger.info("✅ pgvector extension and embedding columns ensured.")
+            # Structured profile extras (JSON) — idempotent.
+            for col in ("education", "experience", "certificates"):
+                await conn.execute(
+                    text(
+                        f"ALTER TABLE student_profiles "
+                        f"ADD COLUMN IF NOT EXISTS {col} JSON"
+                    )
+                )
+        logger.info("✅ pgvector extension and embedding/profile columns ensured.")
 
     yield
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")

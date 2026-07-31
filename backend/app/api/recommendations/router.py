@@ -190,6 +190,7 @@ async def get_recommendations(
     ELIG_WEIGHT = 0.15
 
     intern_by_id = {str(i.id): i for i in internships}
+    user_skill_set = {s.lower() for s in user_skills}
 
     def eligibility_for(intern_obj) -> float:
         if intern_obj is None or intern_obj.min_gpa is None:
@@ -199,13 +200,32 @@ async def get_recommendations(
             return 1.0
         return max(0.3, round(gpa_val / min_gpa, 4))
 
+    def skill_overlap_for(intern_obj, sem_eff: float) -> float:
+        """Real skill match = fraction of the role's listed skills the student has.
+
+        Falls back to the semantic fit when the role has no parsed skills, so the
+        bar still reflects a genuine signal instead of a flat constant.
+        """
+        if intern_obj is None:
+            return sem_eff
+        req = [
+            is_obj.skill.name
+            for is_obj in intern_obj.internship_skills
+            if is_obj.skill
+        ]
+        if not req:
+            return sem_eff
+        matched = sum(1 for s in req if s.lower() in user_skill_set)
+        return round(matched / len(req), 4)
+
     scored = []
     for res in rank_results:
         intern_id_str = str(res["internship_id"])
-        skill_score = float(res["match_score"])
+        intern_obj = intern_by_id.get(intern_id_str)
         sem = semantic_scores.get(intern_id_str)
-        sem_eff = sem if sem is not None else skill_score
-        elig = eligibility_for(intern_by_id.get(intern_id_str))
+        sem_eff = sem if sem is not None else float(res["match_score"])
+        skill_score = skill_overlap_for(intern_obj, sem_eff)
+        elig = eligibility_for(intern_obj)
         blended = round(
             SEMANTIC_WEIGHT * sem_eff + SKILL_WEIGHT * skill_score + ELIG_WEIGHT * elig,
             4,

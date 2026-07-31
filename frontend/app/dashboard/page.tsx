@@ -14,14 +14,16 @@ import {
   ArrowRight,
   Building2,
   User,
+  Eye,
 } from "lucide-react"
 import type {
   ApplicationListResponse,
   RecommendationListResponse,
   Resume,
 } from "@/types"
-import { apiFetch } from "@/services/api"
+import { apiFetch, apiOpenFile } from "@/services/api"
 import { useAuthStore } from "@/store/authStore"
+import { toast } from "@/store/toastStore"
 import { DashboardShell } from "@/components/layout/DashboardShell"
 import { Badge } from "@/components/ui/Badge"
 import { Avatar } from "@/components/ui/Avatar"
@@ -321,7 +323,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 flex items-center justify-between gap-2">
                   {activeResume.is_processed ? (
                     <Badge variant="success">
                       <CheckCircle2 className="h-3 w-3" /> Processed —{" "}
@@ -332,6 +334,22 @@ export default function DashboardPage() {
                       <Clock className="h-3 w-3" /> Processing…
                     </Badge>
                   )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await apiOpenFile(`/resumes/${activeResume.id}/file`)
+                      } catch (err: any) {
+                        toast.error(
+                          "Cannot open resume",
+                          err.message || "Please try again."
+                        )
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-accent"
+                  >
+                    <Eye className="h-3.5 w-3.5" /> View
+                  </button>
                 </div>
               </div>
             ) : resumes === undefined ? (

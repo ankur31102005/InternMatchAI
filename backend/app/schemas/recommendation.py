@@ -81,6 +81,7 @@ class AdminApplicationItem(BaseModel):
     cover_letter: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    applicant_id: uuid.UUID
     applicant_name: str
     applicant_email: str
     internship: Optional[InternshipResponse] = None

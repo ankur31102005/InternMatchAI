@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   User,
   Phone,
@@ -20,11 +20,12 @@ import {
   CheckCircle2,
   BadgeCheck,
   Sparkles,
+  Eye,
+  X,
 } from "lucide-react"
 import type { Resume } from "@/types"
 import { useAuthStore } from "@/store/authStore"
-import { apiFetch } from "@/services/api"
-import { useLocalList } from "@/lib/useLocalList"
+import { apiFetch, apiOpenFile } from "@/services/api"
 import { DashboardShell } from "@/components/layout/DashboardShell"
 import { Input, Label, FieldError } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
@@ -57,9 +58,28 @@ interface CertItem {
   name: string
   issuer: string
 }
+interface ProfileDetails {
+  education: EduItem[]
+  experience: ExpItem[]
+  certificates: CertItem[]
+}
+
+interface SkillItem {
+  id: string
+  name: string
+}
+
+function newId() {
+  try {
+    return crypto.randomUUID()
+  } catch {
+    return `${Date.now()}-${Math.round(Math.random() * 1e6)}`
+  }
+}
 
 export default function ProfilePage() {
   const { user, token, setAuth } = useAuthStore()
+  const queryClient = useQueryClient()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -82,7 +102,31 @@ export default function ProfilePage() {
     retry: false,
   })
   const activeResume = resumes?.find((r) => r.is_active) ?? resumes?.[0]
-  const resumeSkills = activeResume?.skills ?? []
+  const resumeSkills = (activeResume?.skills ?? []) as SkillItem[]
+
+  // Backend-persisted profile details
+  const { data: details } = useQuery<ProfileDetails>({
+    queryKey: ["profile-details"],
+    queryFn: () => apiFetch<ProfileDetails>("/users/profile/details"),
+    retry: false,
+  })
+
+  const saveDetails = useMutation({
+    mutationFn: (d: ProfileDetails) =>
+      apiFetch<ProfileDetails>("/users/profile/details", {
+        method: "PUT",
+        json: d,
+      }),
+    onSuccess: (saved) => queryClient.setQueryData(["profile-details"], saved),
+    onError: (err: any) =>
+      toast.error("Save failed", err.message || "Please try again."),
+  })
+
+  const current: ProfileDetails = {
+    education: details?.education ?? [],
+    experience: details?.experience ?? [],
+    certificates: details?.certificates ?? [],
+  }
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true)
@@ -97,6 +141,15 @@ export default function ProfilePage() {
       toast.error("Update failed", err.message || "Please try again.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const viewResume = async () => {
+    if (!activeResume) return
+    try {
+      await apiOpenFile(`/resumes/${activeResume.id}/file`)
+    } catch (err: any) {
+      toast.error("Cannot open resume", err.message || "Please try again.")
     }
   }
 
@@ -190,45 +243,67 @@ export default function ProfilePage() {
                   {...register("phone")}
                 />
               </div>
-              <Button
-                type="submit"
-                loading={isSubmitting}
-                disabled={!isDirty}
-              >
+              <Button type="submit" loading={isSubmitting} disabled={!isDirty}>
                 {!isSubmitting && <Save className="h-4 w-4" />}
                 Save changes
               </Button>
             </form>
           </section>
 
-          {/* Skills (from resume) */}
-          <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
-            <h3 className="mb-4 flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
-              <Sparkles className="h-5 w-5 text-primary" /> Skills
-            </h3>
-            {resumeSkills.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {resumeSkills.map((s) => (
-                  <Badge key={s.id} variant="default">
-                    {s.name}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-border p-5 text-center">
-                <p className="mb-3 text-sm text-muted-foreground">
-                  Skills are extracted automatically from your resume.
-                </p>
-                <Button href="/upload" variant="outline" size="sm">
-                  <UploadCloud className="h-4 w-4" /> Upload resume
-                </Button>
-              </div>
-            )}
-          </section>
+          {/* Skills */}
+          <SkillsSection
+            skills={resumeSkills}
+            hasResume={!!activeResume}
+          />
 
-          <EducationSection />
-          <ExperienceSection />
-          <CertificatesSection />
+          <EducationSection
+            items={current.education}
+            onAdd={(item) => {
+              saveDetails.mutate({
+                ...current,
+                education: [...current.education, { ...item, id: newId() }],
+              })
+              toast.success("Education added")
+            }}
+            onRemove={(id) =>
+              saveDetails.mutate({
+                ...current,
+                education: current.education.filter((e) => e.id !== id),
+              })
+            }
+          />
+          <ExperienceSection
+            items={current.experience}
+            onAdd={(item) => {
+              saveDetails.mutate({
+                ...current,
+                experience: [...current.experience, { ...item, id: newId() }],
+              })
+              toast.success("Experience added")
+            }}
+            onRemove={(id) =>
+              saveDetails.mutate({
+                ...current,
+                experience: current.experience.filter((e) => e.id !== id),
+              })
+            }
+          />
+          <CertificatesSection
+            items={current.certificates}
+            onAdd={(item) => {
+              saveDetails.mutate({
+                ...current,
+                certificates: [...current.certificates, { ...item, id: newId() }],
+              })
+              toast.success("Certificate added")
+            }}
+            onRemove={(id) =>
+              saveDetails.mutate({
+                ...current,
+                certificates: current.certificates.filter((c) => c.id !== id),
+              })
+            }
+          />
 
           {/* Resume */}
           <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
@@ -250,13 +325,16 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {activeResume.is_processed && (
                     <Badge variant="success">
                       <CheckCircle2 className="h-3 w-3" /> Processed
                     </Badge>
                   )}
-                  <Button href="/upload" variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={viewResume}>
+                    <Eye className="h-4 w-4" /> View
+                  </Button>
+                  <Button href="/upload" variant="ghost" size="sm">
                     Replace
                   </Button>
                 </div>
@@ -278,18 +356,119 @@ export default function ProfilePage() {
   )
 }
 
+/* ── Skills (resume skills + manual add) ── */
+function SkillsSection({
+  skills,
+  hasResume,
+}: {
+  skills: SkillItem[]
+  hasResume: boolean
+}) {
+  const queryClient = useQueryClient()
+  const [value, setValue] = useState("")
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["resumes"] })
+
+  const addSkill = useMutation({
+    mutationFn: (name: string) =>
+      apiFetch<SkillItem[]>("/resumes/skills", {
+        method: "POST",
+        json: { name },
+      }),
+    onSuccess: () => {
+      setValue("")
+      invalidate()
+    },
+    onError: (err: any) =>
+      toast.error("Could not add skill", err.message || "Please try again."),
+  })
+
+  const removeSkill = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<SkillItem[]>(`/resumes/skills/${id}`, { method: "DELETE" }),
+    onSuccess: invalidate,
+  })
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const name = value.trim()
+    if (!name) return
+    addSkill.mutate(name)
+  }
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+      <h3 className="mb-4 flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
+        <Sparkles className="h-5 w-5 text-primary" /> Skills
+      </h3>
+
+      {skills.length > 0 ? (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {skills.map((s) => (
+            <span
+              key={s.id}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-sm font-medium text-foreground"
+            >
+              {s.name}
+              <button
+                type="button"
+                onClick={() => removeSkill.mutate(s.id)}
+                className="rounded-full text-muted-foreground transition-colors hover:text-destructive"
+                aria-label={`Remove ${s.name}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="mb-4 rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+          {hasResume
+            ? "No skills yet. Add them below or re-upload your resume."
+            : "Upload a resume to auto-extract skills, or add them manually below."}
+        </p>
+      )}
+
+      {hasResume ? (
+        <form onSubmit={submit} className="flex gap-2">
+          <Input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Add a skill (e.g. Python, Excel)"
+            className="flex-1"
+          />
+          <Button type="submit" loading={addSkill.isPending} disabled={!value.trim()}>
+            <Plus className="h-4 w-4" /> Add
+          </Button>
+        </form>
+      ) : (
+        <Button href="/upload" variant="outline" size="sm">
+          <UploadCloud className="h-4 w-4" /> Upload resume
+        </Button>
+      )}
+    </section>
+  )
+}
+
 /* ── Education ── */
-function EducationSection() {
-  const { items, add, remove } = useLocalList<EduItem>("profile_education")
+function EducationSection({
+  items,
+  onAdd,
+  onRemove,
+}: {
+  items: EduItem[]
+  onAdd: (item: Omit<EduItem, "id">) => void
+  onRemove: (id: string) => void
+}) {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ institution: "", degree: "", year: "" })
 
   const save = () => {
     if (!form.institution.trim() || !form.degree.trim()) return
-    add(form)
+    onAdd(form)
     setForm({ institution: "", degree: "", year: "" })
     setOpen(false)
-    toast.success("Education added")
   }
 
   return (
@@ -306,7 +485,7 @@ function EducationSection() {
           title={e.degree}
           subtitle={e.institution}
           meta={e.year}
-          onRemove={() => remove(e.id)}
+          onRemove={() => onRemove(e.id)}
         />
       ))}
       <Modal
@@ -354,17 +533,23 @@ function EducationSection() {
 }
 
 /* ── Experience ── */
-function ExperienceSection() {
-  const { items, add, remove } = useLocalList<ExpItem>("profile_experience")
+function ExperienceSection({
+  items,
+  onAdd,
+  onRemove,
+}: {
+  items: ExpItem[]
+  onAdd: (item: Omit<ExpItem, "id">) => void
+  onRemove: (id: string) => void
+}) {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ role: "", org: "", period: "" })
 
   const save = () => {
     if (!form.role.trim() || !form.org.trim()) return
-    add(form)
+    onAdd(form)
     setForm({ role: "", org: "", period: "" })
     setOpen(false)
-    toast.success("Experience added")
   }
 
   return (
@@ -381,7 +566,7 @@ function ExperienceSection() {
           title={e.role}
           subtitle={e.org}
           meta={e.period}
-          onRemove={() => remove(e.id)}
+          onRemove={() => onRemove(e.id)}
         />
       ))}
       <Modal
@@ -429,17 +614,23 @@ function ExperienceSection() {
 }
 
 /* ── Certificates ── */
-function CertificatesSection() {
-  const { items, add, remove } = useLocalList<CertItem>("profile_certificates")
+function CertificatesSection({
+  items,
+  onAdd,
+  onRemove,
+}: {
+  items: CertItem[]
+  onAdd: (item: Omit<CertItem, "id">) => void
+  onRemove: (id: string) => void
+}) {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ name: "", issuer: "" })
 
   const save = () => {
     if (!form.name.trim()) return
-    add(form)
+    onAdd(form)
     setForm({ name: "", issuer: "" })
     setOpen(false)
-    toast.success("Certificate added")
   }
 
   return (
@@ -455,7 +646,7 @@ function CertificatesSection() {
           key={c.id}
           title={c.name}
           subtitle={c.issuer}
-          onRemove={() => remove(c.id)}
+          onRemove={() => onRemove(c.id)}
         />
       ))}
       <Modal

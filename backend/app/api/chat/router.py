@@ -258,7 +258,9 @@ async def chat(
             config=types.GenerateContentConfig(
                 system_instruction=system_text,
                 temperature=0.5,
-                max_output_tokens=800,
+                # Roomy budget: gemini-flash-latest "thinks" first, then answers,
+                # and both share this budget — keep it generous so the reply fits.
+                max_output_tokens=1200,
             ),
         )
         reply = (response.text or "").strip()

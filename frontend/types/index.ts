@@ -104,6 +104,7 @@ export interface AdminApplication {
   cover_letter?: string | null
   created_at: string
   updated_at: string
+  applicant_id: string
   applicant_name: string
   applicant_email: string
   internship?: Internship | null

@@ -3,19 +3,101 @@ Users API routes – profile management and admin user administration.
 """
 
 import uuid
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import CurrentAdmin, CurrentUser
 from app.core.exceptions import http_400, http_404
 from app.database import get_db
+from app.models.student_profile import StudentProfile
 from app.models.user import User
 from app.schemas.user import UserResponse, UserRoleUpdate, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+
+# ── Profile details (education / experience / certificates) ───
+
+
+class EducationItem(BaseModel):
+    id: Optional[str] = None
+    institution: str = ""
+    degree: str = ""
+    year: str = ""
+
+
+class ExperienceItem(BaseModel):
+    id: Optional[str] = None
+    role: str = ""
+    org: str = ""
+    period: str = ""
+
+
+class CertificateItem(BaseModel):
+    id: Optional[str] = None
+    name: str = ""
+    issuer: str = ""
+
+
+class ProfileDetails(BaseModel):
+    education: List[EducationItem] = []
+    experience: List[ExperienceItem] = []
+    certificates: List[CertificateItem] = []
+
+
+async def _get_or_create_profile(
+    user_id: uuid.UUID, db: AsyncSession
+) -> StudentProfile:
+    profile = (
+        await db.execute(
+            select(StudentProfile).where(StudentProfile.user_id == user_id)
+        )
+    ).scalar_one_or_none()
+    if not profile:
+        profile = StudentProfile(user_id=user_id)
+        db.add(profile)
+        await db.commit()
+        await db.refresh(profile)
+    return profile
+
+
+@router.get(
+    "/profile/details",
+    response_model=ProfileDetails,
+    summary="Get education / experience / certificates",
+)
+async def get_profile_details(
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
+) -> ProfileDetails:
+    profile = await _get_or_create_profile(current_user.id, db)
+    return ProfileDetails(
+        education=profile.education or [],
+        experience=profile.experience or [],
+        certificates=profile.certificates or [],
+    )
+
+
+@router.put(
+    "/profile/details",
+    response_model=ProfileDetails,
+    summary="Save education / experience / certificates",
+)
+async def update_profile_details(
+    payload: ProfileDetails,
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_db),
+) -> ProfileDetails:
+    profile = await _get_or_create_profile(current_user.id, db)
+    profile.education = [e.model_dump() for e in payload.education]
+    profile.experience = [e.model_dump() for e in payload.experience]
+    profile.certificates = [c.model_dump() for c in payload.certificates]
+    await db.commit()
+    return payload
 
 
 @router.get(
