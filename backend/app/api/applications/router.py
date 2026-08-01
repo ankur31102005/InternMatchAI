@@ -18,6 +18,7 @@ from app.core.exceptions import (
 from app.database import get_db
 from app.models.application import Application
 from app.models.internship import Internship
+from app.models.notification import Notification
 from app.schemas.recommendation import (
     AdminApplicationItem,
     AdminApplicationListResponse,
@@ -154,9 +155,30 @@ async def update_application_status(
     if not application:
         raise http_404(f"Application {application_id} not found.")
 
-    application.status = new_status
-    await db.commit()
-    await db.refresh(application)
+    old_status_norm = application.status.strip().lower() if application.status else ""
+
+    if old_status_norm != new_status:
+        application.status = new_status
+
+        role_title = (
+            application.internship.title if application.internship else "Internship"
+        )
+        company = (
+            application.internship.company if application.internship else "the company"
+        )
+        status_display = new_status.replace("_", " ").title()
+
+        notification = Notification(
+            user_id=application.user_id,
+            title="Application Update",
+            message=(
+                f"Your application for {role_title} at {company} is now {status_display}."
+            ),
+        )
+        db.add(notification)
+        await db.commit()
+        await db.refresh(application)
+
     return ApplicationResponse.model_validate(application)
 
 

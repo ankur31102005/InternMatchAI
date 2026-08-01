@@ -11,6 +11,7 @@ import {
   UploadCloud,
   Shield,
   Home,
+  Bookmark,
 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { cn } from "@/lib/utils"
@@ -21,6 +22,7 @@ const items = [
   { href: "/internships", label: "Browse Internships", icon: Briefcase },
   { href: "/recommendations", label: "AI Matches", icon: Sparkles },
   { href: "/applications", label: "My Applications", icon: FileText },
+  { href: "/saved", label: "Saved Internships", icon: Bookmark },
   { href: "/upload", label: "Upload Resume", icon: UploadCloud },
   { href: "/profile", label: "Profile", icon: User },
 ]

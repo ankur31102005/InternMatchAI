@@ -24,6 +24,9 @@ from app.api import (
     internships_router,
     recommendations_router,
     applications_router,
+    saved_router,
+    notifications_router,
+    profile_router,
     chat_router,
 )
 from app.config import settings
@@ -151,6 +154,9 @@ def create_application() -> FastAPI:
     app.include_router(internships_router, prefix=API_PREFIX)
     app.include_router(recommendations_router, prefix=API_PREFIX)
     app.include_router(applications_router, prefix=API_PREFIX)
+    app.include_router(saved_router, prefix=API_PREFIX)
+    app.include_router(notifications_router, prefix=API_PREFIX)
+    app.include_router(profile_router, prefix=API_PREFIX)
     app.include_router(chat_router, prefix=API_PREFIX)
 
     # ── Health Check ──────────────────────────────────────────

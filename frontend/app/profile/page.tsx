@@ -22,8 +22,16 @@ import {
   Sparkles,
   Eye,
   X,
+  MapPin,
+  BookOpen,
 } from "lucide-react"
-import type { Resume } from "@/types"
+import type {
+  Resume,
+  StudentProfileData,
+  EducationItem,
+  ExperienceItem,
+  CertificateItem,
+} from "@/types"
 import { useAuthStore } from "@/store/authStore"
 import { apiFetch, apiOpenFile } from "@/services/api"
 import { DashboardShell } from "@/components/layout/DashboardShell"
@@ -32,37 +40,21 @@ import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
 import { Avatar } from "@/components/ui/Avatar"
 import { Modal } from "@/components/ui/Modal"
+import { ProfileSkeleton } from "@/components/ui/Skeleton"
 import { formatDate } from "@/lib/format"
 import { toast } from "@/store/toastStore"
 
 const profileSchema = z.object({
   full_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   phone: z.string().optional(),
+  location: z.string().optional(),
+  university: z.string().optional(),
+  degree: z.string().optional(),
+  major: z.string().optional(),
+  gpa: z.string().optional(),
+  bio: z.string().optional(),
 })
 type ProfileFormValues = z.infer<typeof profileSchema>
-
-interface EduItem {
-  id: string
-  institution: string
-  degree: string
-  year: string
-}
-interface ExpItem {
-  id: string
-  role: string
-  org: string
-  period: string
-}
-interface CertItem {
-  id: string
-  name: string
-  issuer: string
-}
-interface ProfileDetails {
-  education: EduItem[]
-  experience: ExpItem[]
-  certificates: CertItem[]
-}
 
 interface SkillItem {
   id: string
@@ -89,56 +81,78 @@ export default function ProfilePage() {
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({ resolver: zodResolver(profileSchema) })
 
-  useEffect(() => {
-    if (user) {
-      setValue("full_name", user.full_name)
-      setValue("phone", user.phone || "")
-    }
-  }, [user, setValue])
+  // Backend-persisted profile data
+  const { data: profileData, isLoading: isLoadingProfile } = useQuery<StudentProfileData>({
+    queryKey: ["profile-me"],
+    queryFn: () => apiFetch<StudentProfileData>("/profile/me"),
+    retry: false,
+  })
 
+  // Resumes list
   const { data: resumes } = useQuery<Resume[]>({
     queryKey: ["resumes"],
     queryFn: () => apiFetch<Resume[]>("/resumes/"),
     retry: false,
   })
   const activeResume = resumes?.find((r) => r.is_active) ?? resumes?.[0]
-  const resumeSkills = (activeResume?.skills ?? []) as SkillItem[]
 
-  // Backend-persisted profile details
-  const { data: details } = useQuery<ProfileDetails>({
-    queryKey: ["profile-details"],
-    queryFn: () => apiFetch<ProfileDetails>("/users/profile/details"),
-    retry: false,
-  })
+  useEffect(() => {
+    if (profileData) {
+      setValue("full_name", profileData.full_name || user?.full_name || "")
+      setValue("phone", profileData.phone || user?.phone || "")
+      setValue("location", profileData.location || "")
+      setValue("university", profileData.university || "")
+      setValue("degree", profileData.degree || "")
+      setValue("major", (profileData.major as string) || "")
+      setValue("gpa", profileData.gpa || "")
+      setValue("bio", profileData.bio || "")
+    } else if (user) {
+      setValue("full_name", user.full_name)
+      setValue("phone", user.phone || "")
+    }
+  }, [profileData, user, setValue])
 
-  const saveDetails = useMutation({
-    mutationFn: (d: ProfileDetails) =>
-      apiFetch<ProfileDetails>("/users/profile/details", {
+  const saveProfileMutation = useMutation({
+    mutationFn: (payload: Partial<StudentProfileData>) =>
+      apiFetch<StudentProfileData>("/profile/me", {
         method: "PUT",
-        json: d,
+        json: payload,
       }),
-    onSuccess: (saved) => queryClient.setQueryData(["profile-details"], saved),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["profile-me"], updated)
+      if (token && user) {
+        setAuth(
+          {
+            ...user,
+            full_name: updated.full_name || user.full_name,
+            phone: updated.phone || user.phone,
+          },
+          token
+        )
+      }
+      toast.success("Profile updated", "Your details have been saved to the server.")
+    },
     onError: (err: any) =>
-      toast.error("Save failed", err.message || "Please try again."),
+      toast.error("Update failed", err.message || "Please try again."),
   })
 
-  const current: ProfileDetails = {
-    education: details?.education ?? [],
-    experience: details?.experience ?? [],
-    certificates: details?.certificates ?? [],
-  }
+  const currentEducation: EducationItem[] = profileData?.education ?? []
+  const currentExperience: ExperienceItem[] = profileData?.experience ?? []
+  const currentCertificates: CertificateItem[] = profileData?.certificates ?? []
+  const currentSkills: string[] = profileData?.skills ?? []
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true)
     try {
-      const updated = await apiFetch<any>("/users/profile", {
-        method: "PATCH",
-        json: data,
+      await saveProfileMutation.mutateAsync({
+        ...data,
+        education: currentEducation,
+        experience: currentExperience,
+        certificates: currentCertificates,
+        skills: currentSkills,
       })
-      if (token) setAuth(updated, token)
-      toast.success("Profile updated", "Your details have been saved.")
-    } catch (err: any) {
-      toast.error("Update failed", err.message || "Please try again.")
+    } catch {
+      // error handled in mutation
     } finally {
       setIsSubmitting(false)
     }
@@ -160,23 +174,34 @@ export default function ProfilePage() {
           My profile
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Keep your information up to date to improve match quality.
+          Keep your information up to date in your account to improve match quality.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {isLoadingProfile ? (
+        <ProfileSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Summary */}
         <aside className="lg:col-span-1">
           <div className="sticky top-24 rounded-2xl border border-border bg-card p-6 text-center shadow-card">
             <Avatar
-              name={user?.full_name}
+              name={profileData?.full_name || user?.full_name}
               size={80}
               className="mx-auto rounded-2xl"
             />
             <h2 className="mt-4 font-heading text-lg font-semibold text-foreground">
-              {user?.full_name}
+              {profileData?.full_name || user?.full_name}
             </h2>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <p className="text-sm text-muted-foreground">
+              {profileData?.email || user?.email}
+            </p>
+            {profileData?.location && (
+              <p className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                {profileData.location}
+              </p>
+            )}
             <div className="mt-3 flex justify-center gap-2">
               {user?.is_verified ? (
                 <Badge variant="success">
@@ -186,17 +211,29 @@ export default function ProfilePage() {
                 <Badge variant="warning">Unverified</Badge>
               )}
             </div>
-            <div className="mt-5 border-t border-border pt-4 text-left text-sm">
+            <div className="mt-5 border-t border-border pt-4 text-left text-sm space-y-2">
               <div className="flex items-center justify-between py-1">
-                <span className="text-muted-foreground">Member since</span>
-                <span className="font-medium text-foreground">
-                  {formatDate(user?.created_at)}
+                <span className="text-muted-foreground">Degree</span>
+                <span className="font-medium text-foreground truncate max-w-[140px]">
+                  {profileData?.degree || "Not set"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-muted-foreground">Major</span>
+                <span className="font-medium text-foreground truncate max-w-[140px]">
+                  {profileData?.major || "Not set"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-muted-foreground">Skills on file</span>
                 <span className="font-medium text-foreground">
-                  {resumeSkills.length}
+                  {currentSkills.length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-muted-foreground">Member since</span>
+                <span className="font-medium text-foreground">
+                  {formatDate(user?.created_at)}
                 </span>
               </div>
             </div>
@@ -205,44 +242,104 @@ export default function ProfilePage() {
 
         {/* Sections */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Personal info */}
+          {/* Personal & Academic info */}
           <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
             <h3 className="mb-4 flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
-              <User className="h-5 w-5 text-primary" /> Personal information
+              <User className="h-5 w-5 text-primary" /> Personal &amp; Academic Details
             </h3>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <div>
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  icon={Mail}
-                  value={user?.email || ""}
-                  disabled
-                  className="opacity-70"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Email cannot be changed.
-                </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    icon={Mail}
+                    value={user?.email || ""}
+                    disabled
+                    className="opacity-70"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="full_name">Full name</Label>
+                  <Input
+                    id="full_name"
+                    icon={User}
+                    error={!!errors.full_name}
+                    {...register("full_name")}
+                  />
+                  <FieldError>{errors.full_name?.message}</FieldError>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="full_name">Full name</Label>
-                <Input
-                  id="full_name"
-                  icon={User}
-                  error={!!errors.full_name}
-                  {...register("full_name")}
-                />
-                <FieldError>{errors.full_name?.message}</FieldError>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="phone">Phone number</Label>
+                  <Input
+                    id="phone"
+                    icon={Phone}
+                    placeholder="+91 98765 43210"
+                    {...register("phone")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="location">Location / City</Label>
+                  <Input
+                    id="location"
+                    icon={MapPin}
+                    placeholder="New Delhi, India"
+                    {...register("location")}
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="phone">Phone number</Label>
-                <Input
-                  id="phone"
-                  icon={Phone}
-                  placeholder="+91 98765 43210"
-                  {...register("phone")}
-                />
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <Label htmlFor="university">University / College</Label>
+                  <Input
+                    id="university"
+                    icon={GraduationCap}
+                    placeholder="Delhi University"
+                    {...register("university")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="degree">Degree</Label>
+                  <Input
+                    id="degree"
+                    icon={BookOpen}
+                    placeholder="B.Tech / B.Sc"
+                    {...register("degree")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="major">Major / Stream</Label>
+                  <Input
+                    id="major"
+                    placeholder="Computer Science"
+                    {...register("major")}
+                  />
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="gpa">GPA / Percentage</Label>
+                  <Input
+                    id="gpa"
+                    placeholder="8.5 / 10"
+                    {...register("gpa")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="bio">Bio / Summary</Label>
+                  <Input
+                    id="bio"
+                    placeholder="Enthusiastic CS student interested in AI..."
+                    {...register("bio")}
+                  />
+                </div>
+              </div>
+
               <Button type="submit" loading={isSubmitting} disabled={!isDirty}>
                 {!isSubmitting && <Save className="h-4 w-4" />}
                 Save changes
@@ -252,57 +349,70 @@ export default function ProfilePage() {
 
           {/* Skills */}
           <SkillsSection
-            skills={resumeSkills}
-            hasResume={!!activeResume}
+            skills={currentSkills}
+            onUpdate={(skills) =>
+              saveProfileMutation.mutate({
+                ...profileData,
+                skills,
+              })
+            }
           />
 
+          {/* Education */}
           <EducationSection
-            items={current.education}
+            items={currentEducation}
             onAdd={(item) => {
-              saveDetails.mutate({
-                ...current,
-                education: [...current.education, { ...item, id: newId() }],
+              const updated = [...currentEducation, { ...item, id: newId() }]
+              saveProfileMutation.mutate({
+                ...profileData,
+                education: updated,
               })
-              toast.success("Education added")
             }}
-            onRemove={(id) =>
-              saveDetails.mutate({
-                ...current,
-                education: current.education.filter((e) => e.id !== id),
+            onRemove={(id) => {
+              const updated = currentEducation.filter((e) => e.id !== id)
+              saveProfileMutation.mutate({
+                ...profileData,
+                education: updated,
               })
-            }
+            }}
           />
+
+          {/* Experience */}
           <ExperienceSection
-            items={current.experience}
+            items={currentExperience}
             onAdd={(item) => {
-              saveDetails.mutate({
-                ...current,
-                experience: [...current.experience, { ...item, id: newId() }],
+              const updated = [...currentExperience, { ...item, id: newId() }]
+              saveProfileMutation.mutate({
+                ...profileData,
+                experience: updated,
               })
-              toast.success("Experience added")
             }}
-            onRemove={(id) =>
-              saveDetails.mutate({
-                ...current,
-                experience: current.experience.filter((e) => e.id !== id),
+            onRemove={(id) => {
+              const updated = currentExperience.filter((e) => e.id !== id)
+              saveProfileMutation.mutate({
+                ...profileData,
+                experience: updated,
               })
-            }
+            }}
           />
+
+          {/* Certificates */}
           <CertificatesSection
-            items={current.certificates}
+            items={currentCertificates}
             onAdd={(item) => {
-              saveDetails.mutate({
-                ...current,
-                certificates: [...current.certificates, { ...item, id: newId() }],
+              const updated = [...currentCertificates, { ...item, id: newId() }]
+              saveProfileMutation.mutate({
+                ...profileData,
+                certificates: updated,
               })
-              toast.success("Certificate added")
             }}
-            onRemove={(id) =>
-              saveDetails.mutate({
-                ...current,
-                certificates: current.certificates.filter((c) => c.id !== id),
+            onRemove={(id) => {
+              const updated = currentCertificates.filter((c) => c.id !== id)
+              saveProfileMutation.mutate({
+                ...profileData,
+                certificates: updated,
               })
-            }
+            }}
           />
 
           {/* Resume */}
@@ -352,49 +462,31 @@ export default function ProfilePage() {
           </section>
         </div>
       </div>
+      )}
     </DashboardShell>
   )
 }
 
-/* ── Skills (resume skills + manual add) ── */
+/* ── Skills Section ── */
 function SkillsSection({
   skills,
-  hasResume,
+  onUpdate,
 }: {
-  skills: SkillItem[]
-  hasResume: boolean
+  skills: string[]
+  onUpdate: (skills: string[]) => void
 }) {
-  const queryClient = useQueryClient()
   const [value, setValue] = useState("")
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["resumes"] })
-
-  const addSkill = useMutation({
-    mutationFn: (name: string) =>
-      apiFetch<SkillItem[]>("/resumes/skills", {
-        method: "POST",
-        json: { name },
-      }),
-    onSuccess: () => {
-      setValue("")
-      invalidate()
-    },
-    onError: (err: any) =>
-      toast.error("Could not add skill", err.message || "Please try again."),
-  })
-
-  const removeSkill = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<SkillItem[]>(`/resumes/skills/${id}`, { method: "DELETE" }),
-    onSuccess: invalidate,
-  })
-
-  const submit = (e: React.FormEvent) => {
+  const addSkill = (e: React.FormEvent) => {
     e.preventDefault()
     const name = value.trim()
-    if (!name) return
-    addSkill.mutate(name)
+    if (!name || skills.includes(name)) return
+    onUpdate([...skills, name])
+    setValue("")
+  }
+
+  const removeSkill = (name: string) => {
+    onUpdate(skills.filter((s) => s !== name))
   }
 
   return (
@@ -407,15 +499,15 @@ function SkillsSection({
         <div className="mb-4 flex flex-wrap gap-2">
           {skills.map((s) => (
             <span
-              key={s.id}
+              key={s}
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-sm font-medium text-foreground"
             >
-              {s.name}
+              {s}
               <button
                 type="button"
-                onClick={() => removeSkill.mutate(s.id)}
+                onClick={() => removeSkill(s)}
                 className="rounded-full text-muted-foreground transition-colors hover:text-destructive"
-                aria-label={`Remove ${s.name}`}
+                aria-label={`Remove ${s}`}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -424,41 +516,33 @@ function SkillsSection({
         </div>
       ) : (
         <p className="mb-4 rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-          {hasResume
-            ? "No skills yet. Add them below or re-upload your resume."
-            : "Upload a resume to auto-extract skills, or add them manually below."}
+          No skills listed yet. Add them below or upload your resume.
         </p>
       )}
 
-      {hasResume ? (
-        <form onSubmit={submit} className="flex gap-2">
-          <Input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Add a skill (e.g. Python, Excel)"
-            className="flex-1"
-          />
-          <Button type="submit" loading={addSkill.isPending} disabled={!value.trim()}>
-            <Plus className="h-4 w-4" /> Add
-          </Button>
-        </form>
-      ) : (
-        <Button href="/upload" variant="outline" size="sm">
-          <UploadCloud className="h-4 w-4" /> Upload resume
+      <form onSubmit={addSkill} className="flex gap-2">
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Add a skill (e.g. Python, Excel)"
+          className="flex-1"
+        />
+        <Button type="submit" disabled={!value.trim()}>
+          <Plus className="h-4 w-4" /> Add
         </Button>
-      )}
+      </form>
     </section>
   )
 }
 
-/* ── Education ── */
+/* ── Education Section ── */
 function EducationSection({
   items,
   onAdd,
   onRemove,
 }: {
-  items: EduItem[]
-  onAdd: (item: Omit<EduItem, "id">) => void
+  items: EducationItem[]
+  onAdd: (item: Omit<EducationItem, "id">) => void
   onRemove: (id: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -479,13 +563,13 @@ function EducationSection({
       empty={items.length === 0}
       emptyText="Add your degrees and institutions."
     >
-      {items.map((e) => (
+      {items.map((e, idx) => (
         <ListRow
-          key={e.id}
+          key={e.id || idx}
           title={e.degree}
           subtitle={e.institution}
           meta={e.year}
-          onRemove={() => onRemove(e.id)}
+          onRemove={() => e.id && onRemove(e.id)}
         />
       ))}
       <Modal
@@ -532,14 +616,14 @@ function EducationSection({
   )
 }
 
-/* ── Experience ── */
+/* ── Experience Section ── */
 function ExperienceSection({
   items,
   onAdd,
   onRemove,
 }: {
-  items: ExpItem[]
-  onAdd: (item: Omit<ExpItem, "id">) => void
+  items: ExperienceItem[]
+  onAdd: (item: Omit<ExperienceItem, "id">) => void
   onRemove: (id: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -560,13 +644,13 @@ function ExperienceSection({
       empty={items.length === 0}
       emptyText="Add internships, projects or work experience."
     >
-      {items.map((e) => (
+      {items.map((e, idx) => (
         <ListRow
-          key={e.id}
+          key={e.id || idx}
           title={e.role}
           subtitle={e.org}
           meta={e.period}
-          onRemove={() => onRemove(e.id)}
+          onRemove={() => e.id && onRemove(e.id)}
         />
       ))}
       <Modal
@@ -613,14 +697,14 @@ function ExperienceSection({
   )
 }
 
-/* ── Certificates ── */
+/* ── Certificates Section ── */
 function CertificatesSection({
   items,
   onAdd,
   onRemove,
 }: {
-  items: CertItem[]
-  onAdd: (item: Omit<CertItem, "id">) => void
+  items: CertificateItem[]
+  onAdd: (item: Omit<CertificateItem, "id">) => void
   onRemove: (id: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -641,12 +725,12 @@ function CertificatesSection({
       empty={items.length === 0}
       emptyText="Add certifications and credentials."
     >
-      {items.map((c) => (
+      {items.map((c, idx) => (
         <ListRow
-          key={c.id}
+          key={c.id || idx}
           title={c.name}
           subtitle={c.issuer}
-          onRemove={() => onRemove(c.id)}
+          onRemove={() => c.id && onRemove(c.id)}
         />
       ))}
       <Modal

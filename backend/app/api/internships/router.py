@@ -85,6 +85,55 @@ async def get_internship(
     return InternshipResponse.model_validate(internship)
 
 
+@router.get(
+    "/{internship_id}/similar",
+    response_model=InternshipListResponse,
+    summary="Get similar internships",
+)
+async def get_similar_internships(
+    internship_id: uuid.UUID,
+    limit: int = Query(3, ge=1, le=10),
+    db: AsyncSession = Depends(get_db),
+) -> InternshipListResponse:
+    """Return up to `limit` active internships similar to the given internship."""
+    result = await db.execute(select(Internship).where(Internship.id == internship_id))
+    target = result.scalar_one_or_none()
+    if not target:
+        raise http_404(f"Internship {internship_id} not found.")
+
+    query = select(Internship).where(
+        Internship.is_active == True,  # noqa: E712
+        Internship.id != target.id,
+    )
+    if target.sector:
+        query = query.where(Internship.sector == target.sector)
+
+    query = query.order_by(Internship.created_at.desc()).limit(limit)
+    res = await db.execute(query)
+    similar = list(res.scalars().all())
+
+    if len(similar) < limit:
+        excluded_ids = [target.id] + [s.id for s in similar]
+        needed = limit - len(similar)
+        fallback_res = await db.execute(
+            select(Internship)
+            .where(
+                Internship.is_active == True,  # noqa: E712
+                Internship.id.not_in(excluded_ids),
+            )
+            .order_by(Internship.created_at.desc())
+            .limit(needed)
+        )
+        similar.extend(fallback_res.scalars().all())
+
+    return InternshipListResponse(
+        total=len(similar),
+        page=1,
+        per_page=limit,
+        items=[InternshipResponse.model_validate(i) for i in similar],
+    )
+
+
 @router.post(
     "/",
     response_model=InternshipResponse,

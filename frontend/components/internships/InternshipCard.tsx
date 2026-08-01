@@ -2,11 +2,13 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { MapPin, Clock, Wallet, Building2, ArrowRight, Sparkles } from "lucide-react"
+import { MapPin, Clock, Wallet, Building2, ArrowRight, Sparkles, Bookmark, BookmarkCheck } from "lucide-react"
 import type { Internship } from "@/types"
 import { Badge } from "@/components/ui/Badge"
 import { Avatar } from "@/components/ui/Avatar"
 import { formatStipend, companyAccent } from "@/lib/format"
+import { useSavedInternships } from "@/lib/useSavedInternships"
+import { cn } from "@/lib/utils"
 
 interface InternshipCardProps {
   internship: Internship
@@ -20,6 +22,8 @@ export function InternshipCard({
   index = 0,
 }: InternshipCardProps) {
   const accent = companyAccent(internship.company)
+  const { isSaved, toggleSave } = useSavedInternships()
+  const saved = isSaved(internship.id)
 
   return (
     <motion.article
@@ -42,12 +46,31 @@ export function InternshipCard({
             </p>
           </div>
         </div>
-        {typeof matchPercent === "number" && (
-          <span className="flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-bold text-success">
-            <Sparkles className="h-3 w-3" />
-            {matchPercent}%
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {typeof matchPercent === "number" && (
+            <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-bold text-success">
+              <Sparkles className="h-3 w-3" />
+              {matchPercent}%
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={(e) => toggleSave(internship.id, e)}
+            aria-label={saved ? "Remove bookmark" : "Bookmark internship"}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-xl border transition-colors",
+              saved
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-input bg-surface text-muted-foreground hover:border-primary hover:text-primary"
+            )}
+          >
+            {saved ? (
+              <BookmarkCheck className="h-4 w-4 fill-primary/20" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </div>
 
       <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-muted-foreground">

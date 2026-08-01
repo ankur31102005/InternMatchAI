@@ -9,6 +9,8 @@ from app.models.resume import Resume, ResumeSkill
 from app.models.internship import Internship, InternshipSkill
 from app.models.recommendation import Recommendation
 from app.models.application import Application
+from app.models.saved_internship import SavedInternship
+from app.models.notification import Notification
 
 __all__ = [
     "User",
@@ -20,4 +22,6 @@ __all__ = [
     "InternshipSkill",
     "Recommendation",
     "Application",
+    "SavedInternship",
+    "Notification",
 ]

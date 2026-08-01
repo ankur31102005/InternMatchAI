@@ -24,6 +24,19 @@ from app.schemas.recommendation import (
     MessageResponse,
     ErrorResponse,
 )
+from app.schemas.saved_internship import (
+    SavedInternshipResponse,
+    SavedInternshipListResponse,
+)
+from app.schemas.notification import (
+    NotificationResponse,
+    NotificationListResponse,
+    UnreadCountResponse,
+)
+from app.schemas.profile import (
+    StudentProfileSchema,
+    StudentProfileUpdate,
+)
 
 __all__ = [
     "RegisterRequest",
@@ -44,6 +57,13 @@ __all__ = [
     "ApplicationCreate",
     "ApplicationResponse",
     "ApplicationListResponse",
+    "SavedInternshipResponse",
+    "SavedInternshipListResponse",
+    "NotificationResponse",
+    "NotificationListResponse",
+    "UnreadCountResponse",
+    "StudentProfileSchema",
+    "StudentProfileUpdate",
     "MessageResponse",
     "ErrorResponse",
 ]
