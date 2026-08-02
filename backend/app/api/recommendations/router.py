@@ -209,9 +209,7 @@ async def get_recommendations(
         if intern_obj is None:
             return sem_eff
         req = [
-            is_obj.skill.name
-            for is_obj in intern_obj.internship_skills
-            if is_obj.skill
+            is_obj.skill.name for is_obj in intern_obj.internship_skills if is_obj.skill
         ]
         if not req:
             return sem_eff

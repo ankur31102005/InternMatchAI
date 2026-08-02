@@ -20,14 +20,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-
+      # Lint/format only needs ruff + black (static checks), not the app deps —
+      # installing the full requirements here just made CI slow and flaky.
       - name: Run Backend Lint / Format Check
         run: |
-          pip install flake8 black ruff
+          pip install black ruff
           ruff check backend/app
           black --check backend/app
 
@@ -44,14 +41,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r ai-service/requirements.txt
-
+      # Lint/format only needs ruff + black (static checks), not torch /
+      # sentence-transformers — installing those made this job slow and flaky.
       - name: Run AI Service Lint / Format Check
         run: |
-          pip install flake8 black ruff
+          pip install black ruff
           ruff check ai-service/app
           black --check ai-service/app
 

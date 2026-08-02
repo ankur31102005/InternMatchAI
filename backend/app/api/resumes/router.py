@@ -192,9 +192,7 @@ async def _extract_profile_details_gemini(text: str) -> dict | None:
         resp = await client.aio.models.generate_content(
             model=settings.CHAT_MODEL,
             contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.1, max_output_tokens=1500
-            ),
+            config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=1500),
         )
         raw = (resp.text or "").strip()
         start, end = raw.find("{"), raw.rfind("}")
@@ -383,9 +381,7 @@ async def process_resume_task(resume_id: uuid.UUID, file_path_str: str, ext: str
                 exp = _normalize_items(
                     details.get("experience"), ["role", "org", "period"]
                 )
-                cert = _normalize_items(
-                    details.get("certificates"), ["name", "issuer"]
-                )
+                cert = _normalize_items(details.get("certificates"), ["name", "issuer"])
                 if edu and not profile.education:
                     profile.education = edu
                 if exp and not profile.experience:
