@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   MapPin,
   Clock,
@@ -19,14 +19,19 @@ import {
   Briefcase,
   ArrowRight,
   ShieldCheck,
+  Bookmark,
+  BookmarkCheck,
+  Share2,
 } from "lucide-react"
 import type {
   Internship,
   InternshipListResponse,
   RecommendationListResponse,
+  ApplicationListResponse,
 } from "@/types"
 import { apiFetch } from "@/services/api"
 import { useAuthStore } from "@/store/authStore"
+import { useSavedInternships } from "@/lib/useSavedInternships"
 import { PageShell } from "@/components/layout/PageShell"
 import { Breadcrumb } from "@/components/ui/Breadcrumb"
 import { Badge } from "@/components/ui/Badge"
@@ -35,7 +40,7 @@ import { Button } from "@/components/ui/Button"
 import { ProgressRing } from "@/components/ui/ProgressRing"
 import { InternshipCard } from "@/components/internships/InternshipCard"
 import { MatchBreakdown } from "@/components/internships/MatchBreakdown"
-import { FullPageSpinner } from "@/components/ui/Spinner"
+import { CardSkeleton, ListSkeleton } from "@/components/ui/Skeleton"
 import { EmptyState } from "@/components/ui/EmptyState"
 import {
   formatStipend,
@@ -56,29 +61,39 @@ const BENEFITS = [
 
 export default function InternshipDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const queryClient = useQueryClient()
   const { isAuthenticated } = useAuthStore()
-  const [applied, setApplied] = useState(false)
+  const { isSaved, toggleSave } = useSavedInternships()
+  const saved = isSaved(id)
+
+  const [appliedJustNow, setAppliedJustNow] = useState(false)
   const [applying, setApplying] = useState(false)
 
+  // Fetch internship detail
   const { data: internship, isLoading, isError } = useQuery<Internship>({
     queryKey: ["internship", id],
     queryFn: () => apiFetch<Internship>(`/internships/${id}`),
     enabled: !!id,
   })
 
-  const { data: similar } = useQuery<InternshipListResponse>({
-    queryKey: ["similar", internship?.sector, id],
-    queryFn: () =>
-      apiFetch<InternshipListResponse>(
-        `/internships/?per_page=6${
-          internship?.sector
-            ? `&sector=${encodeURIComponent(internship.sector)}`
-            : ""
-        }`
-      ),
-    enabled: !!internship,
+  // Fetch user applications to detect already-applied state
+  const { data: userApps } = useQuery<ApplicationListResponse>({
+    queryKey: ["applications"],
+    queryFn: () => apiFetch<ApplicationListResponse>("/applications/"),
+    enabled: isAuthenticated,
   })
 
+  const existingApp = userApps?.items.find((a) => a.internship_id === id)
+  const hasApplied = appliedJustNow || !!existingApp
+
+  // Fetch similar internships from backend API
+  const { data: similarData, isLoading: isLoadingSimilar } = useQuery<InternshipListResponse>({
+    queryKey: ["similar-internships", id],
+    queryFn: () => apiFetch<InternshipListResponse>(`/internships/${id}/similar?limit=3`),
+    enabled: !!id && !!internship,
+  })
+
+  // Fetch recommendations for AI match score
   const { data: recs } = useQuery<RecommendationListResponse>({
     queryKey: ["recommendations"],
     queryFn: () => apiFetch<RecommendationListResponse>("/recommendations/"),
@@ -89,11 +104,14 @@ export default function InternshipDetailPage() {
   const matched = parseSkillList(rec?.matched_skills)
   const missing = parseSkillList(rec?.missing_skills)
 
+  // Apply Handler
   const handleApply = async () => {
     if (!isAuthenticated) {
       toast.info("Please sign in", "Create an account to apply for internships.")
       return
     }
+    if (hasApplied) return
+
     setApplying(true)
     try {
       await apiFetch("/applications/", {
@@ -103,7 +121,8 @@ export default function InternshipDetailPage() {
           cover_letter: "Applying via InternMatch AI.",
         },
       })
-      setApplied(true)
+      setAppliedJustNow(true)
+      queryClient.invalidateQueries({ queryKey: ["applications"] })
       toast.success("Application submitted", "Track it under My Applications.")
     } catch (err: any) {
       toast.error("Couldn't apply", err.message || "Please try again.")
@@ -112,10 +131,44 @@ export default function InternshipDetailPage() {
     }
   }
 
+  // Share Handler
+  const handleShare = async () => {
+    if (!internship) return
+    const shareData = {
+      title: internship.title,
+      text: `Check out this internship: ${internship.title} at ${internship.company} on InternMatch AI!`,
+      url: typeof window !== "undefined" ? window.location.href : "",
+    }
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // User cancelled or share dismissed
+      }
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        toast.success("Link copied", "Internship URL copied to clipboard.")
+      } catch {
+        toast.error("Could not copy link", "Please copy the address bar URL manually.")
+      }
+    }
+  }
+
   if (isLoading) {
     return (
       <PageShell>
-        <FullPageSpinner label="Loading internship…" />
+        <div className="container-page py-10 space-y-6">
+          <CardSkeleton />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-6">
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
+            <CardSkeleton />
+          </div>
+        </div>
       </PageShell>
     )
   }
@@ -143,11 +196,11 @@ export default function InternshipDetailPage() {
   const requiredSkills = internship.skills.filter((s) => s.is_required)
   const optionalSkills = internship.skills.filter((s) => !s.is_required)
   const similarItems =
-    similar?.items.filter((i) => i.id !== internship.id).slice(0, 3) ?? []
+    similarData?.items.filter((i) => i.id !== internship.id).slice(0, 3) ?? []
 
   return (
     <PageShell>
-      <div className="container-page py-8">
+      <div className="container-page py-8 pb-28 md:pb-12">
         <Breadcrumb
           items={[
             { label: "Internships", href: "/internships" },
@@ -159,17 +212,17 @@ export default function InternshipDetailPage() {
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
           <div className="tricolor-bar h-1.5 w-full" />
           <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-start sm:justify-between sm:p-8">
-            <div className="flex gap-4">
-              <Avatar name={internship.company} size={64} color={accent} />
-              <div>
-                <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <div className="flex gap-4 min-w-0">
+              <Avatar name={internship.company} size={64} color={accent} className="shrink-0" />
+              <div className="min-w-0">
+                <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl truncate">
                   {internship.title}
                 </h1>
                 <Link
                   href={`/companies/${slugify(internship.company)}`}
-                  className="mt-1 inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-primary"
+                  className="mt-1 inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-primary truncate"
                 >
-                  <Building2 className="h-4 w-4" />
+                  <Building2 className="h-4 w-4 shrink-0" />
                   {internship.company}
                 </Link>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -187,24 +240,57 @@ export default function InternshipDetailPage() {
               </div>
             </div>
 
+            {/* Desktop Actions */}
             <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-              <Button
-                onClick={handleApply}
-                loading={applying}
-                variant={applied ? "success" : "primary"}
-                size="lg"
-                disabled={applied}
-              >
-                {applied ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4" /> Applied
-                  </>
-                ) : (
-                  <>
-                    Apply now <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Share Button */}
+                <Button
+                  onClick={handleShare}
+                  variant="outline"
+                  size="lg"
+                  aria-label="Share internship"
+                >
+                  <Share2 className="h-4 w-4" /> Share
+                </Button>
+
+                {/* Bookmark Button */}
+                <Button
+                  onClick={(e) => toggleSave(internship.id, e)}
+                  variant="outline"
+                  size="lg"
+                  className={saved ? "border-primary text-primary bg-primary/5" : ""}
+                  aria-label={saved ? "Remove bookmark" : "Save internship"}
+                >
+                  {saved ? (
+                    <>
+                      <BookmarkCheck className="h-4 w-4 fill-primary/20 text-primary" /> Saved
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="h-4 w-4" /> Save
+                    </>
+                  )}
+                </Button>
+
+                {/* Apply Button */}
+                <Button
+                  onClick={handleApply}
+                  loading={applying}
+                  variant={hasApplied ? "success" : "primary"}
+                  size="lg"
+                  disabled={hasApplied}
+                >
+                  {hasApplied ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" /> Applied
+                    </>
+                  ) : (
+                    <>
+                      Apply now <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
               {internship.application_deadline && (
                 <p className="text-xs text-muted-foreground">
                   Apply by {formatDate(internship.application_deadline)}
@@ -249,7 +335,7 @@ export default function InternshipDetailPage() {
               <div key={f.label} className="bg-card p-4">
                 <f.icon className="mb-1.5 h-4 w-4 text-primary" />
                 <p className="text-xs text-muted-foreground">{f.label}</p>
-                <p className="text-sm font-semibold text-foreground">{f.value}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{f.value}</p>
               </div>
             ))}
           </div>
@@ -318,7 +404,7 @@ export default function InternshipDetailPage() {
               </h2>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-3">
-                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <GraduationCap className="h-5 w-5 text-primary shrink-0" />
                   <span className="text-muted-foreground">
                     Minimum degree:{" "}
                     <span className="font-medium text-foreground">
@@ -327,7 +413,7 @@ export default function InternshipDetailPage() {
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-primary" />
+                  <Award className="h-5 w-5 text-primary shrink-0" />
                   <span className="text-muted-foreground">
                     Minimum GPA:{" "}
                     <span className="font-medium text-foreground">
@@ -336,7 +422,7 @@ export default function InternshipDetailPage() {
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-primary" />
+                  <Calendar className="h-5 w-5 text-primary shrink-0" />
                   <span className="text-muted-foreground">
                     Starts:{" "}
                     <span className="font-medium text-foreground">
@@ -358,7 +444,7 @@ export default function InternshipDetailPage() {
                     key={b.label}
                     className="flex items-center gap-3 rounded-xl bg-muted/50 p-3"
                   >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-primary">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-primary shrink-0">
                       <b.icon className="h-4 w-4" />
                     </span>
                     <span className="text-sm font-medium text-foreground">
@@ -433,30 +519,93 @@ export default function InternshipDetailPage() {
               <Button
                 onClick={handleApply}
                 loading={applying}
-                variant={applied ? "success" : "primary"}
+                variant={hasApplied ? "success" : "primary"}
                 size="lg"
-                disabled={applied}
-                className="w-full"
+                disabled={hasApplied}
+                className="w-full hidden md:inline-flex"
               >
-                {applied ? "Application submitted" : "Apply now"}
+                {hasApplied ? "Application submitted" : "Apply now"}
               </Button>
             </div>
           </aside>
         </div>
 
         {/* Similar internships */}
-        {similarItems.length > 0 && (
-          <section className="mt-14">
-            <h2 className="mb-6 font-heading text-xl font-bold text-foreground">
-              Similar internships
-            </h2>
+        <section className="mt-14">
+          <h2 className="mb-6 font-heading text-xl font-bold text-foreground">
+            Similar internships
+          </h2>
+
+          {isLoadingSimilar ? (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
+            </div>
+          ) : similarItems.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               {similarItems.map((i, idx) => (
                 <InternshipCard key={i.id} internship={i} index={idx} />
               ))}
             </div>
-          </section>
-        )}
+          ) : (
+            <EmptyState
+              icon={Briefcase}
+              title="No similar internships found"
+              description="Explore other categories to discover relevant opportunities."
+              action={
+                <Button href="/internships" variant="outline" size="sm">
+                  Browse all internships
+                </Button>
+              }
+            />
+          )}
+        </section>
+      </div>
+
+      {/* Floating Sticky Mobile Action Bar (Positioned above Task 8 MobileNav bottom-0) */}
+      <div className="fixed bottom-16 left-0 right-0 z-30 flex items-center justify-between border-t border-border bg-card/95 p-3 px-4 backdrop-blur-md md:hidden shadow-lg">
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleShare}
+            variant="outline"
+            size="sm"
+            aria-label="Share internship"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={(e) => toggleSave(internship.id, e)}
+            variant="outline"
+            size="sm"
+            className={saved ? "border-primary text-primary bg-primary/5" : ""}
+            aria-label={saved ? "Remove bookmark" : "Save internship"}
+          >
+            {saved ? (
+              <BookmarkCheck className="h-4 w-4 fill-primary/20 text-primary" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+
+        <Button
+          onClick={handleApply}
+          loading={applying}
+          variant={hasApplied ? "success" : "primary"}
+          size="sm"
+          disabled={hasApplied}
+        >
+          {hasApplied ? (
+            <>
+              <CheckCircle2 className="h-4 w-4" /> Applied
+            </>
+          ) : (
+            <>
+              Apply now <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </Button>
       </div>
     </PageShell>
   )

@@ -18,11 +18,13 @@ import {
   GraduationCap,
   Shield,
   Home,
+  Bookmark,
 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useTheme } from "@/lib/useTheme"
 import { Avatar } from "@/components/ui/Avatar"
 import { Button } from "@/components/ui/Button"
+import { NotificationDropdown } from "@/components/layout/NotificationDropdown"
 import { cn } from "@/lib/utils"
 
 const publicLinks = [
@@ -38,6 +40,7 @@ const authedLinks = [
   { href: "/internships", label: "Internships", icon: Briefcase },
   { href: "/recommendations", label: "AI Matches", icon: Sparkles },
   { href: "/applications", label: "Applications", icon: FileText },
+  { href: "/saved", label: "Saved", icon: Bookmark },
 ]
 
 export function Navbar() {
@@ -110,6 +113,8 @@ export function Navbar() {
                 <Moon className="h-4 w-4" />
               )}
             </button>
+
+            <NotificationDropdown isAuthenticated={isAuthenticated} />
 
             {isAuthenticated ? (
               <div className="hidden items-center gap-2 md:flex">

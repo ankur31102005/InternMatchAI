@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from app.models.resume import Resume
     from app.models.application import Application
     from app.models.recommendation import Recommendation
+    from app.models.saved_internship import SavedInternship
+    from app.models.notification import Notification
 
 
 class User(Base, UUIDMixin, TimestampMixin):
@@ -53,6 +55,12 @@ class User(Base, UUIDMixin, TimestampMixin):
     )
     recommendations: Mapped[List["Recommendation"]] = relationship(
         "Recommendation", back_populates="user", cascade="all, delete-orphan"
+    )
+    saved_internships: Mapped[List["SavedInternship"]] = relationship(
+        "SavedInternship", back_populates="user", cascade="all, delete-orphan"
+    )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

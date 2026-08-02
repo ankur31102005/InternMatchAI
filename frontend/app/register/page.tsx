@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Mail, User, Phone, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react"
 import { apiFetch } from "@/services/api"
+import { useAuthStore } from "@/store/authStore"
 import { AuthLayout } from "@/components/layout/AuthLayout"
 import { GoogleButton } from "@/components/auth/GoogleButton"
 import { PasswordInput } from "@/components/auth/PasswordInput"
@@ -54,9 +55,19 @@ export default function RegisterPage() {
     setIsSubmitting(true)
     try {
       await apiFetch("/auth/register", { method: "POST", json: data })
-      setSuccessMsg("Account created! Redirecting to sign in…")
-      toast.success("Account created", "You can now sign in.")
-      setTimeout(() => router.push("/login"), 1800)
+      // Auto-login
+      const res = await apiFetch<{ access_token: string }>("/auth/login", {
+        method: "POST",
+        json: { email: data.email, password: data.password },
+      })
+      const token = res.access_token
+      const user = await apiFetch<any>("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      useAuthStore.getState().setAuth(user, token)
+      setSuccessMsg("Account created! Redirecting to setup…")
+      toast.success("Account created", "Welcome! Let's set up your profile.")
+      router.push("/onboarding")
     } catch (err: any) {
       setServerError(err.message || "Registration failed. Try a different email.")
     } finally {

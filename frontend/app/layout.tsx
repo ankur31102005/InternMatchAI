@@ -29,14 +29,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Apply saved theme before paint to avoid a flash of the wrong theme */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
-          }}
-        />
-      </head>
       <body
         className={`${inter.variable} ${poppins.variable} font-sans bg-background text-foreground antialiased min-h-screen`}
       >

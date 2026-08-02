@@ -134,3 +134,74 @@ export interface Resume {
   created_at: string
   skills: Skill[]
 }
+
+export interface SavedInternship {
+  id: string
+  user_id: string
+  internship_id: string
+  created_at: string
+  internship?: Internship | null
+}
+
+export interface SavedInternshipListResponse {
+  total: number
+  items: SavedInternship[]
+}
+
+export interface AppNotification {
+  id: string
+  user_id: string
+  title: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface NotificationListResponse {
+  total: number
+  items: AppNotification[]
+}
+
+export interface UnreadCountResponse {
+  count: number
+}
+
+export interface EducationItem {
+  id?: string
+  institution: string
+  degree: string
+  year: string
+}
+
+export interface ExperienceItem {
+  id?: string
+  role: string
+  org: string
+  period: string
+}
+
+export interface CertificateItem {
+  id?: string
+  name: string
+  issuer: string
+}
+
+export interface StudentProfileData {
+  id: string
+  user_id: string
+  full_name?: string | null
+  email?: string | null
+  phone?: string | null
+  location?: string | null
+  university?: string | null
+  degree?: string | null
+  major?: number | string | null
+  graduation_year?: number | null
+  gpa?: string | null
+  bio?: string | null
+  education: EducationItem[]
+  experience: ExperienceItem[]
+  certificates: CertificateItem[]
+  skills: string[]
+  is_onboarding_completed?: boolean
+}

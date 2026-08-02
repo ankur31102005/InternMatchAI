@@ -6,7 +6,7 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import JSON, Date, ForeignKey, Integer, String, Text, Uuid
+from sqlalchemy import JSON, Boolean, Date, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -42,6 +42,7 @@ class StudentProfile(Base, UUIDMixin, TimestampMixin):
     student_id: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     # ── Personal ──────────────────────────────────────────────
+    location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     date_of_birth: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     nationality: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -55,6 +56,7 @@ class StudentProfile(Base, UUIDMixin, TimestampMixin):
     # education:   [{institution, degree, year}]
     # experience:  [{role, org, period}]
     # certificates:[{name, issuer}]
+    # skills:      ["Python", "SQL"]
     education: Mapped[Optional[list]] = mapped_column(JSON, default=list, nullable=True)
     experience: Mapped[Optional[list]] = mapped_column(
         JSON, default=list, nullable=True
@@ -62,12 +64,16 @@ class StudentProfile(Base, UUIDMixin, TimestampMixin):
     certificates: Mapped[Optional[list]] = mapped_column(
         JSON, default=list, nullable=True
     )
+    skills: Mapped[Optional[list]] = mapped_column(JSON, default=list, nullable=True)
 
-    # ── PM Scheme Eligibility ─────────────────────────────────
+    # ── PM Scheme Eligibility & Onboarding ────────────────────
     is_eligible_for_pm_scheme: Mapped[bool] = mapped_column(
         default=False, nullable=False
     )
     eligibility_checked_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    is_onboarding_completed: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
 
     # ── Relationships ─────────────────────────────────────────
     user: Mapped["User"] = relationship("User", back_populates="profile")

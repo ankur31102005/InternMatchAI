@@ -1,28 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
-
-type Theme = "light" | "dark"
+import { useTheme as useNextTheme } from "next-themes"
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>("light")
+  const { theme, setTheme, resolvedTheme } = useNextTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const saved = (localStorage.getItem("theme") as Theme) || "light"
-    setTheme(saved)
-    document.documentElement.classList.toggle("dark", saved === "dark")
     setMounted(true)
   }, [])
 
   const toggle = () => {
-    setTheme((prev) => {
-      const next: Theme = prev === "dark" ? "light" : "dark"
-      document.documentElement.classList.toggle("dark", next === "dark")
-      localStorage.setItem("theme", next)
-      return next
-    })
+    const current = resolvedTheme || theme || "light"
+    setTheme(current === "dark" ? "light" : "dark")
   }
 
-  return { theme, toggle, mounted }
+  const currentTheme = (resolvedTheme || theme || "light") as "light" | "dark"
+
+  return {
+    theme: currentTheme,
+    toggle,
+    mounted,
+    setTheme,
+  }
 }

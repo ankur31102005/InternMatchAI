@@ -49,10 +49,20 @@ export default function LoginPage() {
       const user = await apiFetch<any>("/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      // 3. Persist auth
+      // 3. Check profile onboarding status
+      const profile = await apiFetch<any>("/profile/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => null)
+
+      // 4. Persist auth
       setAuth(user, token)
       toast.success("Welcome back!", `Signed in as ${user.full_name}`)
-      router.push("/dashboard")
+
+      if (profile && !profile.is_onboarding_completed && !user.is_admin) {
+        router.push("/onboarding")
+      } else {
+        router.push("/dashboard")
+      }
     } catch (err: any) {
       setServerError(err.message || "Invalid credentials. Please try again.")
     } finally {
