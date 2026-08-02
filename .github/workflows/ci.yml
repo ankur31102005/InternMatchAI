@@ -24,7 +24,9 @@ jobs:
       # installing the full requirements here just made CI slow and flaky.
       - name: Run Backend Lint / Format Check
         run: |
-          pip install black ruff
+          # Pin versions so a new ruff/black release can't spontaneously
+          # break CI with newly-added default rules.
+          pip install black==26.5.1 ruff==0.15.22
           ruff check backend/app
           black --check backend/app
 
@@ -45,7 +47,9 @@ jobs:
       # sentence-transformers — installing those made this job slow and flaky.
       - name: Run AI Service Lint / Format Check
         run: |
-          pip install black ruff
+          # Pin versions so a new ruff/black release can't spontaneously
+          # break CI with newly-added default rules.
+          pip install black==26.5.1 ruff==0.15.22
           ruff check ai-service/app
           black --check ai-service/app
 
